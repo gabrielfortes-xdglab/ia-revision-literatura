@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Herramientas IA para revisión de Literatura</title>
-<meta name="description" content="Curso práctico de uso crítico de IA para revisión de literatura. Dr. Gabriel Fortes.">
+<meta name="description" content="Curso práctico de uso crítico de IA para revisión de literatura. Universidad Alberto Hurtado. Dr. Gabriel Fortes.">
 <style>
 *,*::before,*::after{box-sizing:border-box}
 :root{
@@ -16,35 +16,35 @@
   :root{--bg:#14120f;--fg:#f2eee7;--muted:#a89e94;--line:#332e28;--card:#1c1915;--accent:#e08c62}
 }
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
-  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
-.wrap{max-width:760px;margin:0 auto;padding:clamp(2.5rem,8vw,6rem) clamp(1.2rem,5vw,2rem) 4rem}
-.rotulo{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
-  margin-bottom:1.2rem}
+  font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;min-height:100vh}
+.wrap{max-width:620px;width:100%;padding:clamp(2.5rem,7vw,4rem) clamp(1.2rem,5vw,2rem)}
+.rotulo{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 1.1rem}
 h1{font-family:var(--serif);font-weight:600;line-height:1.08;
-  font-size:clamp(2rem,6vw,3.4rem);margin:0;max-width:16ch}
+  font-size:clamp(1.9rem,5.6vw,3rem);margin:0;max-width:16ch}
 .lema{font-family:var(--serif);font-style:italic;color:var(--muted);
-  font-size:clamp(1.05rem,2.6vw,1.5rem);margin:.5rem 0 0}
-.regla{width:90px;height:4px;background:var(--accent);margin:2rem 0}
-.firma{color:var(--muted);font-size:.95rem;margin-bottom:2.5rem}
-.aviso{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
-  border-radius:0 10px 10px 0;padding:1rem 1.2rem;font-size:.95rem;margin-bottom:2.5rem}
-h2{font-family:var(--serif);font-size:1.15rem;margin:0 0 1rem}
-ol{list-style:none;margin:0;padding:0;display:grid;gap:.8rem}
-li a,li div{display:flex;gap:1rem;align-items:baseline;padding:1.1rem 1.2rem;
-  border:1px solid var(--line);border-radius:10px;background:var(--card);
-  text-decoration:none;color:inherit}
-li a:hover{border-color:var(--accent)}
-li a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-li div{opacity:.5}
-.n{font-family:var(--serif);font-size:1.5rem;color:var(--accent);flex:none;width:2.2rem}
-.t{flex:1}
-.t b{display:block;font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:.15rem}
-.t span{color:var(--muted);font-size:.9rem}
-.estado{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-  border:1px solid var(--line);border-radius:999px;padding:.2rem .6rem;flex:none;align-self:center}
-.estado.on{color:var(--accent);border-color:var(--accent)}
-footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid var(--line);
-  color:var(--muted);font-size:.85rem}
+  font-size:clamp(1rem,2.4vw,1.35rem);margin:.45rem 0 0}
+.regla{width:80px;height:4px;background:var(--accent);margin:1.8rem 0}
+.firma{color:var(--muted);font-size:.95rem;margin:0 0 2.6rem;line-height:1.45}
+.firma b{color:var(--fg);font-weight:600;display:block}
+
+.dias{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.dias a,.dias span.off{display:flex;align-items:center;gap:1rem;
+  padding:1.05rem 1.25rem;border:1px solid var(--line);border-radius:10px;
+  background:var(--card);text-decoration:none;color:inherit;transition:border-color .12s}
+.dias a:hover{border-color:var(--accent)}
+.dias a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.dias span.off{opacity:.45}
+.n{font-family:var(--serif);font-size:1.35rem;color:var(--accent);flex:none;width:1.9rem}
+.dias span.off .n{color:var(--muted)}
+.t{flex:1;font-weight:500}
+.flecha{color:var(--accent);flex:none}
+.pronto{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  flex:none}
+@media (prefers-reduced-motion:reduce){.dias a{transition:none}}
+
+footer{margin-top:2.6rem;color:var(--muted);font-size:.82rem}
 footer a{color:var(--accent)}
 </style>
 </head>
@@ -54,47 +54,30 @@ footer a{color:var(--accent)}
   <h1>Herramientas IA para revisión de Literatura</h1>
   <p class="lema">una introducción práctica</p>
   <div class="regla"></div>
-  <p class="firma">Dr. Gabriel Fortes</p>
+  <p class="firma"><b>Dr. Gabriel Fortes</b>Universidad Alberto Hurtado</p>
 
-  <div class="aviso">
-    Abre la página del día que estemos trabajando y déjala abierta durante toda la
-    sesión, junto a tu herramienta de IA. Lo que escribas se guarda <b>solo en tu
-    navegador</b>: no se envía a ninguna parte. Al terminar, descarga tu trabajo con el
-    botón de abajo a la derecha.
-  </div>
-
-  <h2>Los cuatro encuentros</h2>
-  <ol>
+  <!--
+    Para activar un día: reemplazar el bloque <span class="off"> por el <a> equivalente.
+      <li><a href="dia2/"><span class="n">2</span><span class="t">Día 2</span>
+          <span class="flecha" aria-hidden="true">→</span></a></li>
+    y subir la carpeta diaN/ con su index.html.
+  -->
+  <ul class="dias">
     <li><a href="dia1/">
-      <span class="n">1</span>
-      <span class="t"><b>Confianza calibrada y la pregunta</b>
-        <span>En qué falla la IA, cómo se le habla y cómo se busca</span></span>
-      <span class="estado on">Disponible</span>
-    </a></li>
-    <li><div>
-      <span class="n">2</span>
-      <span class="t"><b>Análisis automatizados</b>
-        <span>Qué hacen las herramientas por ti, y qué decisión estás cediendo</span></span>
-      <span class="estado">Pronto</span>
-    </div></li>
-    <li><div>
-      <span class="n">3</span>
-      <span class="t"><b>Metadatos, skills y banco de citas</b>
-        <span>Organizar para decidir mejor qué leer</span></span>
-      <span class="estado">Pronto</span>
-    </div></li>
-    <li><div>
-      <span class="n">4</span>
-      <span class="t"><b>Herramienta propia y límites éticos</b>
-        <span>De la tabla a algo publicado con tu nombre</span></span>
-      <span class="estado">Pronto</span>
-    </div></li>
-  </ol>
+      <span class="n">1</span><span class="t">Día 1</span>
+      <span class="flecha" aria-hidden="true">→</span></a></li>
+    <li><span class="off">
+      <span class="n">2</span><span class="t">Día 2</span>
+      <span class="pronto">Pronto</span></span></li>
+    <li><span class="off">
+      <span class="n">3</span><span class="t">Día 3</span>
+      <span class="pronto">Pronto</span></span></li>
+    <li><span class="off">
+      <span class="n">4</span><span class="t">Día 4</span>
+      <span class="pronto">Pronto</span></span></li>
+  </ul>
 
-  <footer>
-    Material del curso, de uso libre para quien lo esté cursando.
-    Publicado en <a href="https://gabrielfortes-xdglab.github.io/">xdG:Lab</a>.
-  </footer>
+  <footer>Publicado en <a href="https://gabrielfortes-xdglab.github.io/">xdG:Lab</a>.</footer>
 </main>
 </body>
 </html>
