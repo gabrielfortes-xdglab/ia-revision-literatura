@@ -1,0 +1,486 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Herramientas IA para revisión de Literatura · Día 2</title><style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfaf7; --fg:#16130f; --muted:#6b625a; --line:#e2ddd4; --card:#fff;
+  --encuadro:#2f5d8a; --hacen:#2c6e52; --discusion:#6a4a8f; --wow:#b45309;
+  --transicion:#77706a; --accent:#8a3d1f; --demo:#b45309;
+  --r:10px; --pad:clamp(1rem,3vw,2.5rem);
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14120f;--fg:#f2eee7;--muted:#a89e94;--line:#332e28;--card:#1c1915;
+        --encuadro:#7fb0dd;--hacen:#6fc39a;--discusion:#b394dd;--wow:#e9a13b;
+        --transicion:#9a938c;--accent:#e08c62;--demo:#e9a13b}
+}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.15;margin:0}
+p{margin:0 0 .8em}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- barra superior ---------- */
+.bar{position:fixed;inset:0 0 auto 0;height:52px;z-index:50;display:flex;
+  align-items:center;gap:.75rem;padding:0 1rem;background:var(--bg);
+  border-bottom:1px solid var(--line)}
+.bar .dia{font-family:var(--serif);font-weight:600;white-space:nowrap}
+.bar .sep{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{background:none;border:0;padding:.35rem .95rem;font-size:.85rem;
+  color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.chip{font-size:.8rem;color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:.3rem .7rem;background:none;white-space:nowrap}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.reloj{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted);
+  white-space:nowrap}
+.reloj b{color:var(--fg);font-weight:600}
+.reloj.tarde b,.reloj.tarde{color:var(--wow)}
+
+/* ---------- modo clase ---------- */
+#clase{display:none;padding-top:52px;min-height:100vh;flex-direction:column}
+body[data-modo=clase] #clase{display:flex}
+.escena{flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:var(--pad);max-width:1180px;margin:0 auto;width:100%}
+.kicker{font-size:clamp(.8rem,1.4vw,1rem);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.6rem}
+.kicker .dot{width:.6em;height:.6em;border-radius:50%;background:currentColor}
+.escena h2{font-size:clamp(1.9rem,4.6vw,3.4rem);margin-bottom:1.2rem;max-width:22ch}
+.escena .sub{font-size:clamp(1.05rem,2vw,1.5rem);color:var(--muted);max-width:44ch}
+.escena ul{font-size:clamp(1.05rem,2.1vw,1.6rem);margin:0;padding-left:1.4em;
+  max-width:36ch}
+.escena ul li{margin-bottom:.55em}
+.escena .frase{font-family:var(--serif);font-size:clamp(1.6rem,4vw,3rem);
+  line-height:1.25;max-width:20ch;border-left:5px solid var(--accent);padding-left:.6em}
+.escena table{width:100%;border-collapse:collapse;font-size:clamp(.85rem,1.5vw,1.15rem)}
+.escena th,.escena td{text-align:left;padding:.7em .8em;border-bottom:1px solid var(--line);
+  vertical-align:top}
+.escena th{font-size:.85em;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  font-weight:600}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem)}
+.dos h3{font-size:clamp(1.1rem,2.2vw,1.7rem);margin-bottom:.7rem}
+.dos ul{font-size:clamp(.95rem,1.7vw,1.25rem);max-width:none}
+@media (max-width:720px){.dos{grid-template-columns:1fr}}
+
+.cubierta{display:flex;flex-direction:column;gap:0}
+.cubierta .rotulo{font-size:clamp(.7rem,1.2vw,.9rem);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:1.4rem}
+.cubierta h1{font-family:var(--serif);font-weight:600;line-height:1.08;
+  font-size:clamp(2.1rem,5.4vw,4.2rem);max-width:18ch;margin:0}
+.cubierta .lema{font-family:var(--serif);font-style:italic;color:var(--muted);
+  font-size:clamp(1.1rem,2.4vw,1.9rem);margin-top:.5rem}
+.cubierta .regla{width:clamp(60px,9vw,120px);height:4px;background:var(--accent);
+  margin:clamp(1.4rem,3vw,2.4rem) 0}
+.cubierta .dia{font-size:clamp(1rem,2vw,1.5rem);font-weight:600}
+.cubierta .dia small{display:block;font-weight:400;color:var(--muted);
+  font-size:clamp(.9rem,1.7vw,1.25rem);margin-top:.2rem}
+.cubierta .firma{margin-top:clamp(1.6rem,4vw,3rem);font-size:clamp(.9rem,1.6vw,1.2rem);
+  color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem}
+
+/* ---------- esquemas de proyección ---------- */
+.flujo{display:flex;gap:.5rem;align-items:stretch;flex-wrap:wrap;margin-top:1.5rem}
+.flujo.malla{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem}
+.flujo .paso{flex:1 1 150px;border:2px solid var(--line);border-radius:var(--r);
+  padding:clamp(.7rem,1.6vw,1.2rem);display:flex;flex-direction:column;gap:.35rem}
+.flujo .paso b{font-family:var(--serif);font-size:clamp(1rem,1.9vw,1.4rem);line-height:1.2}
+.flujo .paso span{font-size:clamp(.78rem,1.25vw,1rem);color:var(--muted);line-height:1.35}
+.flujo .paso.cede{border-color:var(--wow);border-width:3px}
+.flujo .paso.cede b{color:var(--wow)}
+.flujo .fl{align-self:center;color:var(--line);font-size:clamp(1.2rem,2.4vw,2rem);
+  line-height:1;flex:0 0 auto}
+@media (max-width:640px){.flujo{flex-direction:column}.flujo .fl{transform:rotate(90deg)}}
+
+.cuadr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,3vw,2.2rem);margin-top:1.6rem}
+.cuadr .c{border-top:4px solid var(--accent);padding-top:.8rem}
+.cuadr .c b{display:block;font-family:var(--serif);font-size:clamp(1.15rem,2.6vw,2rem);
+  line-height:1.15;margin-bottom:.35rem}
+.cuadr .c span{font-size:clamp(.85rem,1.5vw,1.15rem);color:var(--muted);line-height:1.4}
+@media (max-width:640px){.cuadr{grid-template-columns:1fr;gap:1rem}}
+
+.capas{margin-top:1.6rem;font-family:ui-monospace,Menlo,monospace}
+.capas .cap{border:2px solid var(--line);border-radius:var(--r);
+  padding:clamp(.6rem,1.4vw,1rem);margin-bottom:.6rem;display:flex;align-items:center;
+  gap:.7rem;flex-wrap:wrap;font-size:clamp(.85rem,1.7vw,1.3rem)}
+.capas .cap .op{font-family:var(--sans);font-weight:700;color:var(--accent);
+  font-size:clamp(.7rem,1.2vw,.9rem);letter-spacing:.08em}
+.capas .nota{font-family:var(--sans);color:var(--muted);
+  font-size:clamp(.8rem,1.4vw,1.05rem);margin-top:.9rem}
+
+/* ---------- pantalla de demostración ---------- */
+.vivo{display:inline-flex;align-items:center;gap:.5rem;font-size:clamp(.75rem,1.3vw,1rem);
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--wow);
+  border:2px solid var(--wow);border-radius:999px;padding:.3rem .9rem;margin-bottom:1.4rem}
+.vivo::before{content:"";width:.6em;height:.6em;border-radius:50%;background:var(--wow)}
+.mirar{margin-top:1.8rem;border-top:1px solid var(--line);padding-top:1.1rem}
+.mirar p{font-size:clamp(.78rem,1.2vw,.95rem);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.7rem}
+.mirar ol{font-size:clamp(1rem,1.9vw,1.4rem);margin:0;padding-left:1.3em;max-width:40ch}
+.mirar li{margin-bottom:.4em}
+.pie{display:flex;align-items:center;gap:1rem;padding:.7rem var(--pad) 1.1rem;
+  border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+.puntos{display:flex;gap:.35rem}
+.puntos i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+.puntos i.on{background:var(--fg)}
+.nav{margin-left:auto;display:flex;gap:.4rem}
+.nav button{background:none;border:1px solid var(--line);border-radius:var(--r);
+  padding:.4rem .8rem}
+.nav button[disabled]{opacity:.35;cursor:default}
+
+/* ---------- notas del docente ---------- */
+#notas{position:fixed;right:0;top:52px;bottom:0;width:min(380px,88vw);z-index:40;
+  background:var(--card);border-left:1px solid var(--line);padding:1.2rem;
+  overflow:auto;transform:translateX(100%);transition:transform .18s ease}
+#notas[data-open=true]{transform:none}
+#notas h3{font-size:1rem;margin-bottom:.8rem}
+#notas li{margin-bottom:.7rem;font-size:.92rem}
+@media (prefers-reduced-motion:reduce){#notas{transition:none}}
+
+/* ---------- modo taller ---------- */
+#taller{display:none;padding-top:52px}
+body[data-modo=taller] #taller{display:block}
+.envoltura{max-width:1140px;margin:0 auto;padding:2rem var(--pad) 5rem;
+  display:grid;grid-template-columns:200px 1fr;gap:2.5rem;align-items:start}
+@media (max-width:860px){.envoltura{grid-template-columns:1fr;gap:1.2rem}
+  #indice{position:static;max-height:none}}
+#indice{position:sticky;top:72px;font-size:.85rem;max-height:calc(100vh - 96px);
+  overflow:auto}
+#indice .fase{font-weight:600;margin:1rem 0 .4rem;font-size:.72rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+#indice a{display:block;padding:.25rem 0;color:var(--fg);text-decoration:none;
+  border-left:2px solid var(--line);padding-left:.6rem}
+#indice a:hover,#indice a.act{border-left-color:var(--accent);color:var(--accent)}
+.intro{margin-bottom:2.5rem}
+.intro h1{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:.6rem}
+.intro .idea{font-family:var(--serif);font-size:1.15rem;color:var(--muted);
+  border-left:4px solid var(--accent);padding-left:1rem;max-width:60ch}
+.bloque{margin-bottom:3rem;scroll-margin-top:72px}
+.bloque > header{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;
+  padding-bottom:.6rem;margin-bottom:1.1rem;border-bottom:2px solid var(--line)}
+.bloque h2{font-size:1.35rem}
+.etq{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:.22rem .55rem;border-radius:4px;color:#fff;white-space:nowrap}
+.min{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.tarj{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:1.1rem 1.2rem;margin-bottom:1rem}
+.tarj > h3{font-size:1rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.tarj p:last-child{margin-bottom:0}
+.nota{border-left:4px solid var(--wow);background:var(--card);padding:.9rem 1.1rem;
+  border-radius:0 var(--r) var(--r) 0;margin-bottom:1rem;font-size:.95rem}
+pre{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:.9rem 1rem;overflow:auto;font-size:.85rem;line-height:1.5;white-space:pre-wrap;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.copiar{display:inline-flex;align-items:center;gap:.4rem;margin-top:.6rem;
+  background:none;border:1px solid var(--line);border-radius:var(--r);padding:.4rem .8rem;
+  font-size:.82rem}
+.copiar.ok{border-color:var(--hacen);color:var(--hacen)}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{margin-bottom:.5rem}
+.chk label{display:flex;gap:.6rem;align-items:flex-start;cursor:pointer;font-size:.95rem}
+.chk input{margin-top:.28em;width:1.05em;height:1.05em;accent-color:var(--accent);flex:none}
+.chk input:checked + span{color:var(--muted);text-decoration:line-through}
+textarea,input[type=text]{width:100%;font:inherit;font-size:.92rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:.6rem .7rem;resize:vertical}
+textarea{min-height:5.5rem}
+label.campo{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
+.rejilla{display:grid;gap:.9rem}
+@media (min-width:700px){.rejilla.c2{grid-template-columns:1fr 1fr}}
+table.edit{width:100%;border-collapse:collapse;font-size:.85rem}
+table.edit th{text-align:left;padding:.4rem .5rem;border-bottom:2px solid var(--line);
+  font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+table.edit td{padding:.2rem;border-bottom:1px solid var(--line)}
+table.edit input{border:0;background:none;padding:.45rem .5rem;border-radius:4px}
+table.edit input:focus{background:var(--card)}
+.tabla-scroll{overflow-x:auto;margin-bottom:.8rem}
+.mini{font-size:.82rem;color:var(--muted)}
+.salida{background:var(--bg);border:1px dashed var(--line);border-radius:var(--r);
+  padding:.9rem 1rem;font-family:ui-monospace,Menlo,monospace;font-size:.85rem;
+  white-space:pre-wrap;min-height:3rem;margin-top:.8rem}
+.exportar{position:fixed;right:1rem;bottom:1rem;z-index:45;background:var(--accent);
+  color:#fff;border:0;border-radius:999px;padding:.75rem 1.3rem;font-size:.9rem;
+  box-shadow:0 6px 20px rgba(0,0,0,.18)}
+body[data-modo=clase] .exportar{display:none}
+</style></head><body data-modo="taller"><header class="bar"><span class="dia">Día 2</span><span class="sep"></span><span class="mini">Sondear el campo y levantar el corpus</span></header><div id="taller"><div class="envoltura"><nav id="indice" aria-label="Bloques"><div class="fase">Dos modos de buscar</div><a href="#b1">Lo que trajo la tarea</a><a href="#b2">Dos modos de buscar, y un tercero que no es hoy</a><div class="fase">Sondear el campo</div><a href="#b3">Qué sabe hacer cada herramienta de sondeo</a><a href="#b5">Respiro</a><a href="#b6">Los mapas del campo</a><div class="fase">Levantar el corpus</div><a href="#b7">Del sondeo al levantamiento</a><a href="#b8">Buscar y traerse los metadatos</a><a href="#b9">El codebook</a><a href="#b10">Para el próximo encuentro</a></nav><div><div class="intro"><p class="mini" style="letter-spacing:.16em;text-transform:uppercase">Herramientas IA para revisión de Literatura</p><h1>Día 2. Sondear el campo y levantar el corpus</h1><p class="idea">Hay dos maneras de buscar y no compiten: <b>sondear</b> sirve para entender de qué se habla, <b>levantar</b> sirve para construir el corpus que vas a leer. Hoy no analizamos nada: hoy se arma la tabla sobre la que el día 3 se va a trabajar.</p><p class="mini" style="margin-top:.9rem">Dr. Gabriel Fortes</p></div><section class="bloque" id="b1"><header><span class="etq" style="background:var(--discusion)">Discusión</span><h2>Lo que trajo la tarea</h2></header><div class="tarj"><h3>Lo que trajo tu tarea</h3><div class="rejilla c2"><div><label class="campo" for="b1-f00">Con la string booleana apareció...</label><textarea id="b1-f00" data-k="b1-f00" placeholder="..."></textarea></div><div><label class="campo" for="b1-f01">Con lenguaje natural apareció...</label><textarea id="b1-f01" data-k="b1-f01" placeholder="..."></textarea></div></div></div></section><section class="bloque" id="b2"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>Dos modos de buscar, y un tercero que no es hoy</h2></header><div class="tarj"><h3>El mapa completo de herramientas</h3><div class="tabla-scroll"><table class="edit"><thead><tr><th>Familia</th><th>Ejemplos</th><th>Sondear</th><th>Levantar</th><th>Analizar</th><th>Cuidado</th></tr></thead><tbody><tr><td><b>Uso general</b></td><td>ChatGPT, Claude, Gemini</td><td>Sí</td><td>No</td><td>Sí, sobre lo que le pegues</td><td>Inventan citas</td></tr><tr><td><b>Búsqueda web con citas</b></td><td>Perplexity</td><td>Sí, rápido</td><td>No</td><td>No</td><td>Cita la web, no la literatura</td></tr><tr><td><b>Anclada a papers</b></td><td>Consensus, Elicit, Scite</td><td>Sí</td><td>A medias</td><td>Dentro de su tope</td><td>Sesgo a lo abierto y reciente</td></tr><tr><td><b>Mapas de citas</b></td><td>Open Knowledge Maps, Connected Papers, ResearchRabbit</td><td>Sí</td><td>Da semillas</td><td>No</td><td>No reemplazan leer</td></tr><tr><td><b>Bases con exportación</b></td><td>SciELO, Google Scholar, Scopus, WoS</td><td>No</td><td><b>Sí</b></td><td>No</td><td>Exigen string</td></tr><tr><td><b>Gestores</b></td><td>Zotero, Mendeley</td><td>No</td><td><b>Sí</b></td><td>Sí, metadatos</td><td>—</td></tr><tr><td><b>Sobre tus PDFs</b></td><td>NotebookLM</td><td>No</td><td>No</td><td><b>Sí</b></td><td>Solo responde lo que le diste</td></tr></tbody></table></div><p class="mini">Scopus AI existe y hace esto mismo sobre Scopus, pero requiere suscripción institucional que aquí no tenemos.</p></div><div class="nota">Mira la columna <b>Analizar</b>: casi todo lo del sondeo no sirve ahí. El análisis usa herramientas parecidas, pero <b>encerradas en el corpus que tú construiste</b>. Por eso el día de hoy termina en una tabla y no en conclusiones.</div></section><section class="bloque" id="b3"><header><span class="etq" style="background:var(--demo)">Demostración</span><h2>Qué sabe hacer cada herramienta de sondeo</h2></header><div class="tarj"><h3>Qué hace distinto cada una</h3><div class="tabla-scroll"><table class="edit"><thead><tr><th>Herramienta</th><th>Lo que hace distinto</th><th>Pregunta que responde bien</th></tr></thead><tbody><tr><td><b>Consensus</b></td><td>Medidor de consenso; pregunta directa sobre un efecto; filtros por diseño y cuartil</td><td>¿Hay acuerdo en que X mejora Y?</td></tr><tr><td><b>Elicit</b></td><td>Matriz con las columnas que tú defines; modo informe</td><td>¿Qué estudiaron, con qué método, qué encontraron?</td></tr><tr><td><b>Scite</b></td><td>Contexto de citación: quién apoya, quién contrasta, quién solo menciona</td><td>¿Esta afirmación está disputada?</td></tr><tr><td><b>Perplexity</b></td><td>Búsqueda web con citas verificables</td><td>¿Qué se está diciendo ahora? ¿Quién trabaja esto?</td></tr><tr><td><b>Mapas</b></td><td>Vecindad entre trabajos, agrupada</td><td>¿Qué subcampos hay y cómo se nombran?</td></tr><tr><td><b>NotebookLM</b></td><td>Responde solo sobre tus PDFs</td><td>¿Qué dice <i>mi</i> corpus? <i>(ya es análisis)</i></td></tr></tbody></table></div></div><div class="nota">Cada prompt dice <b>en qué plataforma</b> correrlo. No es lo mismo: cada una responde bien una pregunta distinta. Prueba al menos tres.</div><div class="tarj"><h3>Sondear un efecto <span class="etq" style="background:var(--encuadro);font-size:.62rem">Consensus</span></h3><pre id="b3-p2">¿[X] mejora [Y]? Muéstrame qué dice la evidencia, cuántos estudios la respaldan y dónde hay desacuerdo.</pre><button class="copiar" data-dest="#b3-p2">Copiar</button></div><div class="tarj"><h3>Sondear una relación entre variables <span class="etq" style="background:var(--encuadro);font-size:.62rem">Consensus</span></h3><pre id="b3-p3">¿Cómo se relacionan [variable A] y [variable B] en [población o contexto]? Dime qué diseños se han usado para estudiarlo.</pre><button class="copiar" data-dest="#b3-p3">Copiar</button></div><div class="tarj"><h3>Armar el panorama del campo <span class="etq" style="background:var(--encuadro);font-size:.62rem">Elicit</span></h3><pre id="b3-p4">Sobre [tu tema], hazme una tabla con los estudios principales. Para cada uno: qué estudiaron, qué método usaron y qué encontraron.</pre><button class="copiar" data-dest="#b3-p4">Copiar</button></div><div class="tarj"><h3>¿Está disputada esta afirmación? <span class="etq" style="background:var(--encuadro);font-size:.62rem">Scite</span></h3><pre id="b3-p5">[Pega una afirmación que se repite en tu campo]
+
+Muéstrame quién la apoya, quién la contrasta y quién solo la menciona.</pre><button class="copiar" data-dest="#b3-p5">Copiar</button></div><div class="tarj"><h3>Qué se está diciendo ahora <span class="etq" style="background:var(--encuadro);font-size:.62rem">Perplexity</span></h3><pre id="b3-p6">¿Qué se está discutiendo actualmente sobre [tu tema]? Dame las fuentes de cada afirmación.</pre><button class="copiar" data-dest="#b3-p6">Copiar</button></div><div class="tarj"><h3>Tu sondeo</h3><div class="rejilla c2"><div><label class="campo" for="b3-f70">Qué me dio cada plataforma que las otras no</label><textarea id="b3-f70" data-k="b3-f70" placeholder="Consensus: ...
+Elicit: ...
+Scite: ...
+Perplexity: ..."></textarea></div><div><label class="campo" for="b3-f71">Qué estaba citando Perplexity</label><textarea id="b3-f71" data-k="b3-f71" placeholder="¿Papers, blogs, notas de prensa?"></textarea></div><div><label class="campo" for="b3-f72">Términos nuevos que aprendí de mi propio campo</label><textarea id="b3-f72" data-k="b3-f72" placeholder="Los que no había usado en mi string del día 1..."></textarea></div></div></div></section><section class="bloque" id="b5"><header><span class="etq" style="background:var(--transicion)">Respiro</span><h2>Respiro</h2></header><p class="mini">Bloque expositivo. Nada que completar aquí.</p></section><section class="bloque" id="b6"><header><span class="etq" style="background:var(--demo)">Demostración</span><h2>Los mapas del campo</h2></header><div class="nota"><b>Open Knowledge Maps</b> (openknowledgemaps.org) no pide cuenta y arma el mapa desde una consulta. <b>Connected Papers</b> y <b>ResearchRabbit</b> hacen algo parecido pero parten de un artículo semilla.</div><div class="tarj"><h3>Tu mapa</h3><div class="rejilla c2"><div><label class="campo" for="b6-f10">Relaciones que ya conocías y que el mapa confirma</label><textarea id="b6-f10" data-k="b6-f10" placeholder="..."></textarea></div><div><label class="campo" for="b6-f11">Algo inesperado que apareció</label><textarea id="b6-f11" data-k="b6-f11" placeholder="Dos cosas juntas que creías separadas, un grupo que no esperabas..."></textarea></div><div><label class="campo" for="b6-f12">Sesgos del sistema que percibiste</label><textarea id="b6-f12" data-k="b6-f12" placeholder="¿Todo en inglés? ¿Todo reciente? ¿Alguien de tu región?"></textarea></div><div><label class="campo" for="b6-f13">Términos que usa cada grupo para nombrar lo mismo</label><textarea id="b6-f13" data-k="b6-f13" placeholder="Para sumarlos a tu string..."></textarea></div></div></div></section><section class="bloque" id="b7"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>Del sondeo al levantamiento</h2></header><div class="tarj"><h3>Tu string, versión 2</h3><label class="campo" for="b7-c0">Reescríbela agregando el vocabulario que te dio el mapa</label><textarea id="b7-c0" data-k="b7-c0" placeholder="Versión del día 1: ...
+Versión de hoy: ..."></textarea></div><div class="tarj"><h3>Arma tus criterios de inclusión</h3><p class="mini" style="margin-bottom:1rem">Para esto sirven: son el filtro que convierte 300 resultados en 20 <b>sin que decidas por cansancio</b>. Escritos antes, cada descarte se justifica solo; escritos después, terminas defendiendo lo que ya habías elegido.</p><div class="rejilla c2"><div><label class="campo" for="cr_ano">Publicados desde el año</label><input type="text" id="cr_ano" data-k="cr_ano" placeholder="2015"></div><div><label class="campo" for="cr_pob">Población o contexto que me sirve</label><input type="text" id="cr_pob" data-k="cr_pob" placeholder="docentes universitarios en América Latina"></div></div><p class="mini" style="margin:1rem 0 .4rem">Tipos de trabajo que acepto</p><ul class="chk"><li><label><input type="checkbox" data-crit="tipo" data-val="artículos revisados por pares" data-k="cr_tipo0"><span>artículos revisados por pares</span></label></li><li><label><input type="checkbox" data-crit="tipo" data-val="capítulos de libro" data-k="cr_tipo1"><span>capítulos de libro</span></label></li><li><label><input type="checkbox" data-crit="tipo" data-val="tesis" data-k="cr_tipo2"><span>tesis</span></label></li><li><label><input type="checkbox" data-crit="tipo" data-val="informes y literatura gris" data-k="cr_tipo3"><span>informes y literatura gris</span></label></li><li><label><input type="checkbox" data-crit="tipo" data-val="actas de congreso" data-k="cr_tipo4"><span>actas de congreso</span></label></li><li><label><input type="checkbox" data-crit="tipo" data-val="preprints" data-k="cr_tipo5"><span>preprints</span></label></li></ul><p class="mini" style="margin:1rem 0 .4rem">Idiomas que puedo leer de verdad</p><ul class="chk"><li><label><input type="checkbox" data-crit="idioma" data-val="español" data-k="cr_idioma0"><span>español</span></label></li><li><label><input type="checkbox" data-crit="idioma" data-val="inglés" data-k="cr_idioma1"><span>inglés</span></label></li><li><label><input type="checkbox" data-crit="idioma" data-val="portugués" data-k="cr_idioma2"><span>portugués</span></label></li></ul><p class="mini" style="margin:1rem 0 .4rem">Cuando no puedo abrir un texto</p><ul class="chk"><li><label><input type="radio" name="cr_acceso" data-crit="acceso" data-val="solo entra lo que puedo abrir" data-k="cr_acceso0"><span>solo entra lo que puedo abrir</span></label></li><li><label><input type="radio" name="cr_acceso" data-crit="acceso" data-val="se lo pido al autor por correo y espero" data-k="cr_acceso1"><span>se lo pido al autor por correo y espero</span></label></li><li><label><input type="radio" name="cr_acceso" data-crit="acceso" data-val="lo anoto como pendiente y sigo" data-k="cr_acceso2"><span>lo anoto como pendiente y sigo</span></label></li></ul><div class="salida" id="salidaCriterios"></div><button class="copiar" data-dest="#salidaCriterios">Copiar mis criterios</button><p class="mini" style="margin-top:.7rem">Pégalos en la primera hoja de tu Excel. Son la primera decisión de tu codebook.</p></div></section><section class="bloque" id="b8"><header><span class="etq" style="background:var(--demo)">Demostración</span><h2>Buscar y traerse los metadatos</h2></header><div class="tarj"><h3>Por qué traerse los metadatos y no escribirlos</h3><p>Cuando exportas desde una base, los datos vienen del editor a través del DOI y de CrossRef: son <b>los mismos</b> que aparecen en la revista. No los escribiste tú, así que no hay erratas, y no los generó un modelo, así que no hay invención. Es exactamente el antídoto contra lo que vimos el día 1.</p><p>Y hay una segunda razón, que se ve más adelante: ese mismo registro es el que después genera la cita en el texto y la lista de referencias final. Lo que capturas bien hoy es trabajo que no vuelves a hacer.</p></div><div class="tarj"><h3>Camino A · Armar la bibliografía en Zotero</h3><p><b>1 · Instala dos cosas</b>, no una: el programa Zotero y el <b>conector del navegador</b>. El conector es el que hace casi toda la magia.</p><p><b>2 · Crea una colección</b> con el nombre de tu revisión. Todo lo de este corpus entra ahí y solo ahí.</p><p><b>3 · Mete referencias por cualquiera de estas tres vías:</b></p><ul><li><b>El conector</b>: estando en la página del artículo, un clic en el ícono y entra con metadatos y PDF si está disponible.</li><li><b>Importar el archivo</b> RIS o BibTeX que exportaste de la base. Entra todo el lote de una vez.</li><li><b>Pegar el DOI</b> con el botón de la varita: escribes el DOI y él busca el resto.</li></ul><p><b>4 · Revisa los metadatos.</b> Los campos que llegan mal con más frecuencia son el tipo de publicación y el nombre de la revista (abreviado o en mayúsculas). Se corrigen a mano, una vez, y quedan bien para siempre. <b>Esto es lo que Zotero hace mejor que nada:</b> editar metadatos.</p><p><b>5 · Quita duplicados</b> en la carpeta “Elementos duplicados”: los detecta solo y los fusiona.</p><p><b>6 · Exporta la colección a CSV</b> cuando quieras llevarla a Excel, o a BibTeX si vas a citar desde un procesador de texto.</p></div><div class="nota"><b>El gestor no es obligatorio.</b> Zotero y Mendeley son sobre todo buenos <b>editores de metadatos</b> y motores de citación. Para construir tu corpus de 10 a 20 textos puedes saltártelos: exporta el CSV desde la base, ábrelo en Excel y ya tienes el corpus. El gestor empieza a pagar cuando el corpus crece, cuando vas a citar dentro del texto, o cuando trabajan varias personas sobre la misma lista.</div><div class="tarj"><h3>¿Y no puedo pedirle las columnas a la plataforma?</h3><p>Sí, y conviene: en <b>Elicit</b> defines tú las columnas de la matriz, y eso es un mini codebook aplicado en el momento de buscar. Sirve muy bien para <b>decidir qué leer</b>.</p><p>Pero lo que te devuelve es <b>su</b> tabla, no la tuya: no lleva tus reglas de decisión, no distingue “no reportado” de vacío, no guarda dónde lo dice, y se queda dentro de su tope de artículos. Tu codebook es lo que vas a <b>defender</b>, y tiene que sobrevivir a la herramienta.</p><p class="mini"><b>Cómo se combinan:</b> siembra las columnas de Elicit con los campos de tu codebook, exporta lo que te dé, pégalo en tu Excel y verifícalo contra el artículo. Ahorra tipeo, no ahorra lectura.</p></div><div class="tarj"><h3>Camino B · Sin gestor, directo a Excel</h3><p><b>1</b> · En la base, marca los resultados que pasan tus criterios.<br><b>2</b> · Exporta la selección en CSV.<br><b>3</b> · Ábrelo en Excel: <b>eso ya es tu corpus</b>.<br><b>4</b> · Agrega a la derecha las columnas de tu codebook.</p><p class="mini">Lo que pierdes por este camino: la deduplicación automática, los PDF adjuntos y la generación de citas. Lo que ganas: empezar ahora mismo sin instalar nada.</p></div><div class="tarj"><h3>Tu cadena, por el camino que hayas elegido</h3><ul class="chk"><li><label><input type="checkbox" data-k="b8-k5-0"><span>Corrí mi string versión 2 en una base con exportación</span></label></li><li><label><input type="checkbox" data-k="b8-k5-1"><span>Apliqué mis criterios de inclusión al listado</span></label></li><li><label><input type="checkbox" data-k="b8-k5-2"><span>Exporté el resultado (RIS o BibTeX al gestor, o CSV directo a Excel)</span></label></li><li><label><input type="checkbox" data-k="b8-k5-3"><span>Revisé los metadatos y corregí lo que llegó mal</span></label></li><li><label><input type="checkbox" data-k="b8-k5-4"><span>Saqué los duplicados</span></label></li><li><label><input type="checkbox" data-k="b8-k5-5"><span>Tengo al menos 10 referencias que sí quiero</span></label></li></ul></div><div class="tarj"><h3>Dónde se trabó</h3><label class="campo" for="b8-c6">Si algo no funcionó, anótalo aquí (lo vemos al final)</label><textarea id="b8-c6" data-k="b8-c6" placeholder="..."></textarea></div></section><section class="bloque" id="b9"><header><span class="etq" style="background:var(--hacen)">Ejercicio</span><h2>El codebook</h2></header><div class="tarj"><h3>Antes de empezar: qué es y qué no es un codebook</h3><p>Tu Excel va a tener <b>dos tipos de columna</b>:</p><p><b>Las que vienen solas</b> (autor, año, título, revista, DOI) llegan con la exportación. Identifican el texto. No dicen nada de su contenido.</p><p><b>Las que exiges leer</b> (diseño, población, n, hallazgo, limitación) las llenas tú, o la IA leyendo el resumen o el PDF. <b>No se deducen de los metadatos.</b> Si alguien te dice que su herramienta “revisa los papers” a partir del listado, no está leyendo nada.</p><p>Entonces el flujo es: exportas (te da las filas), agregas tus columnas vacías, y las llenas leyendo. El ahorro está en no volver a escribir autor, año y revista sesenta veces. El trabajo intelectual sigue siendo tuyo.</p></div><div class="tarj"><h3>Paso 1 · Que la IA te proponga los campos</h3><div><label class="campo" for="ck_preg">Tu pregunta de investigación</label><input type="text" id="ck_preg" data-k="ck_preg" placeholder="la que afinaste el día 1"></div><div class="rejilla c2" style="margin-top:.9rem"><div><label class="campo" for="ck_unidad">¿Qué es una fila?</label><input type="text" id="ck_unidad" data-k="ck_unidad" placeholder="un artículo / un hallazgo / una muestra"></div><div><label class="campo" for="ck_uso">¿Qué quieres poder responder con la tabla?</label><input type="text" id="ck_uso" data-k="ck_uso" placeholder="qué diseños dominan, en qué países, con qué resultados"></div></div><div class="salida" id="salidaCodebook"></div><button class="copiar" data-dest="#salidaCodebook">Copiar el prompt</button><p class="mini" style="margin-top:.7rem">La IA <b>propone</b> los campos. Tú decides cuáles quedan: borra los que no puedas llenar leyendo el artículo.</p></div><div class="tarj"><h3>Paso 2 · El prompt que llena una fila, y tu Excel</h3><div><label class="campo" for="cx_campos">Los campos que decidiste, separados por coma</label><input type="text" id="cx_campos" data-k="cx_campos" placeholder="autor_ano, diseno, pais, n, hallazgo_principal"></div><div class="salida" id="salidaExtraccion"></div><button class="copiar" data-dest="#salidaExtraccion">Copiar el prompt</button> <button class="copiar bajarcsv">Descargar el Excel</button><p class="mini" style="margin-top:.7rem">El prompt <b>muestra</b> la tabla en vez de describirla: es la diferencia que más mueve el resultado. El botón baja dos CSV que se abren en Excel: uno de definición y uno de datos.</p></div><div class="tarj"><h3>Paso 3 · Pruébalo ahora, con dos textos</h3><ul class="chk"><li><label><input type="checkbox" data-k="b9-k3-0"><span>Corrí el prompt de extracción sobre un artículo de mi corpus</span></label></li><li><label><input type="checkbox" data-k="b9-k3-1"><span>Comparé lo que devolvió con lo que dice el artículo</span></label></li><li><label><input type="checkbox" data-k="b9-k3-2"><span>Encontré al menos un campo que era imposible de llenar</span></label></li><li><label><input type="checkbox" data-k="b9-k3-3"><span>Le agregué una regla de decisión a ese campo</span></label></li><li><label><input type="checkbox" data-k="b9-k3-4"><span>Volví a correrlo y salió mejor</span></label></li></ul></div><div class="tarj"><h3>El campo que se rompió</h3><label class="campo" for="b9-c4">¿Cuál campo no se pudo llenar, y qué regla le agregaste?</label><textarea id="b9-c4" data-k="b9-c4" placeholder="Campo: ...
+Problema: ...
+Regla nueva: ..."></textarea></div></section><section class="bloque" id="b10"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>Para el próximo encuentro</h2></header><div class="tarj"><h3>Cómo hacer la tarea, paso a paso</h3><p><b>Te va a tomar unas dos horas.</b> Hazlo en dos sentadas, no en una.</p><p><b>1 · Cierra tu codebook (20 min).</b> Abre el CSV de definición que descargaste. Deja entre 8 y 12 campos. Para cada uno escribe el tipo, los valores permitidos y qué poner cuando el dato no aparece. Si un campo no sabes definirlo, bórralo: no lo vas a poder llenar diez veces igual.</p><p><b>2 · Elige los 10 textos (20 min).</b> Toma tu lista del gestor y aplícale tus criterios de inclusión, uno por uno. Anota al lado de cada descarte <i>por cuál criterio</i> se cayó. Si te quedan menos de 10, amplía el año o suma un idioma; si te quedan 40, aprieta la población.</p><p><b>3 · Llena las tres primeras filas a mano (30 min).</b> Sin IA. Es lento a propósito: ahí descubres qué campo era imposible y le agregas la regla que le faltaba. Un codebook que nunca se llenó a mano siempre está mal.</p><p><b>4 · Llena las siete restantes con el prompt de extracción (40 min).</b> Una por una, no las siete de golpe. Después de cada una, abre el artículo y revisa dos campos al azar contra el texto.</p><p><b>5 · Anota las discrepancias (10 min).</b> Cada vez que la IA puso algo distinto de lo que dice el artículo, escribe el campo y qué pasó. <b>Eso es el material del día 3</b>, no un fracaso.</p></div><div class="tarj"><h3>Cómo se ve un codebook terminado</h3><div class="tabla-scroll"><table class="edit"><thead><tr><th>campo</th><th>qué pregunta responde</th><th>tipo</th><th>valores permitidos</th><th>regla de decisión</th><th>si no aparece</th></tr></thead><tbody><tr><td>autor_ano</td><td>¿Quién y cuándo?</td><td>texto</td><td>—</td><td>primer autor y año</td><td>nunca falta</td></tr><tr><td>diseno</td><td>¿Cómo se produjo la evidencia?</td><td>cerrado</td><td>experimental, cuasi-experimental, correlacional, cualitativo, mixto, revisión</td><td>“estudio de caso múltiple” va como cualitativo</td><td>no reportado</td></tr><tr><td>pais</td><td>¿Dónde se recogieron los datos?</td><td>cerrado</td><td>lista de países</td><td>si hay varios, el de la muestra principal</td><td>no reportado</td></tr><tr><td>n</td><td>¿Cuántos participantes?</td><td>numérico</td><td>entero</td><td>el del análisis principal</td><td>vacío</td></tr><tr><td>hallazgo_principal</td><td>¿Qué encontró?</td><td>verbatim</td><td>cita textual</td><td>copiar del resumen o de conclusiones</td><td>no reportado</td></tr><tr><td>evidencia_donde</td><td>¿Dónde lo dice?</td><td>texto</td><td>sección o página</td><td>siempre obligatorio</td><td>nunca vacío</td></tr></tbody></table></div><p class="mini">Seis campos bien definidos ya sirven. No hacen falta doce.</p></div><div class="tarj"><h3>Está listo cuando...</h3><ul class="chk"><li><label><input type="checkbox" data-k="b10-k2-0"><span>Tengo entre 8 y 12 campos, todos con tipo y regla</span></label></li><li><label><input type="checkbox" data-k="b10-k2-1"><span>Tengo 10 filas llenas</span></label></li><li><label><input type="checkbox" data-k="b10-k2-2"><span>La columna de evidencia está completa en las 10</span></label></li><li><label><input type="checkbox" data-k="b10-k2-3"><span>Sé decir por qué quedó fuera cada texto que descarté</span></label></li><li><label><input type="checkbox" data-k="b10-k2-4"><span>Anoté las discrepancias entre la IA y yo</span></label></li><li><label><input type="checkbox" data-k="b10-k2-5"><span>Descargué el archivo y lo tengo listo para el día 3</span></label></li></ul></div><div class="tarj"><h3>Tus dudas</h3><label class="campo" for="b10-c3">Si algo se traba durante el fin de semana, escríbelo aquí y lo vemos el día 3</label><textarea id="b10-c3" data-k="b10-c3" placeholder="..."></textarea></div></section></div></div></div><button class="exportar" id="bExportar">Descargar mi trabajo</button><script>const DATOS={"dia": 2, "curso": "Herramientas IA para revisión de Literatura", "lema": "una introducción práctica", "docente": "Dr. Gabriel Fortes", "titulo": "Sondear el campo y levantar el corpus", "idea": "Hay dos maneras de buscar y no compiten: <b>sondear</b> sirve para entender de qué se habla, <b>levantar</b> sirve para construir el corpus que vas a leer. Hoy no analizamos nada: hoy se arma la tabla sobre la que el día 3 se va a trabajar.", "duracion": 120, "checklist": ["Consensus, Elicit, Scite y Perplexity probados esta semana con el tema por defecto", "Open Knowledge Maps probado con una consulta propia", "Base con exportación elegida y probada (SciELO o Google Scholar; <b>no hay Scopus AI</b>)", "Exportación RIS descargada e importada a Zotero al menos una vez, cronometrada", "Plantilla del codebook revisada", "Enlace del taller del día 2 publicado y enviado"], "fases": [{"nombre": "Dos modos de buscar", "bloques": ["b1", "b2"]}, {"nombre": "Sondear el campo", "bloques": ["b3", "b5", "b6"]}, {"nombre": "Levantar el corpus", "bloques": ["b7", "b8", "b9", "b10"]}], "bloques": [{"id": "b1", "titulo": "Lo que trajo la tarea", "desde": 0, "hasta": 10, "tipo": "discusion", "taller": [{"k": "campos", "t": "Lo que trajo tu tarea", "items": [{"etiqueta": "Con la string booleana apareció...", "placeholder": "..."}, {"etiqueta": "Con lenguaje natural apareció...", "placeholder": "..."}]}]}, {"id": "b2", "titulo": "Dos modos de buscar, y un tercero que no es hoy", "desde": 10, "hasta": 22, "tipo": "encuadro", "taller": [{"k": "texto", "t": "El mapa completo de herramientas", "texto": "<div class=\"tabla-scroll\"><table class=\"edit\"><thead><tr><th>Familia</th><th>Ejemplos</th><th>Sondear</th><th>Levantar</th><th>Analizar</th><th>Cuidado</th></tr></thead><tbody><tr><td><b>Uso general</b></td><td>ChatGPT, Claude, Gemini</td><td>Sí</td><td>No</td><td>Sí, sobre lo que le pegues</td><td>Inventan citas</td></tr><tr><td><b>Búsqueda web con citas</b></td><td>Perplexity</td><td>Sí, rápido</td><td>No</td><td>No</td><td>Cita la web, no la literatura</td></tr><tr><td><b>Anclada a papers</b></td><td>Consensus, Elicit, Scite</td><td>Sí</td><td>A medias</td><td>Dentro de su tope</td><td>Sesgo a lo abierto y reciente</td></tr><tr><td><b>Mapas de citas</b></td><td>Open Knowledge Maps, Connected Papers, ResearchRabbit</td><td>Sí</td><td>Da semillas</td><td>No</td><td>No reemplazan leer</td></tr><tr><td><b>Bases con exportación</b></td><td>SciELO, Google Scholar, Scopus, WoS</td><td>No</td><td><b>Sí</b></td><td>No</td><td>Exigen string</td></tr><tr><td><b>Gestores</b></td><td>Zotero, Mendeley</td><td>No</td><td><b>Sí</b></td><td>Sí, metadatos</td><td>—</td></tr><tr><td><b>Sobre tus PDFs</b></td><td>NotebookLM</td><td>No</td><td>No</td><td><b>Sí</b></td><td>Solo responde lo que le diste</td></tr></tbody></table></div><p class=\"mini\">Scopus AI existe y hace esto mismo sobre Scopus, pero requiere suscripción institucional que aquí no tenemos.</p>"}, {"k": "nota", "texto": "Mira la columna <b>Analizar</b>: casi todo lo del sondeo no sirve ahí. El análisis usa herramientas parecidas, pero <b>encerradas en el corpus que tú construiste</b>. Por eso el día de hoy termina en una tabla y no en conclusiones."}]}, {"id": "b3", "titulo": "Qué sabe hacer cada herramienta de sondeo", "desde": 22, "hasta": 42, "tipo": "demo", "taller": [{"k": "texto", "t": "Qué hace distinto cada una", "texto": "<div class=\"tabla-scroll\"><table class=\"edit\"><thead><tr><th>Herramienta</th><th>Lo que hace distinto</th><th>Pregunta que responde bien</th></tr></thead><tbody><tr><td><b>Consensus</b></td><td>Medidor de consenso; pregunta directa sobre un efecto; filtros por diseño y cuartil</td><td>¿Hay acuerdo en que X mejora Y?</td></tr><tr><td><b>Elicit</b></td><td>Matriz con las columnas que tú defines; modo informe</td><td>¿Qué estudiaron, con qué método, qué encontraron?</td></tr><tr><td><b>Scite</b></td><td>Contexto de citación: quién apoya, quién contrasta, quién solo menciona</td><td>¿Esta afirmación está disputada?</td></tr><tr><td><b>Perplexity</b></td><td>Búsqueda web con citas verificables</td><td>¿Qué se está diciendo ahora? ¿Quién trabaja esto?</td></tr><tr><td><b>Mapas</b></td><td>Vecindad entre trabajos, agrupada</td><td>¿Qué subcampos hay y cómo se nombran?</td></tr><tr><td><b>NotebookLM</b></td><td>Responde solo sobre tus PDFs</td><td>¿Qué dice <i>mi</i> corpus? <i>(ya es análisis)</i></td></tr></tbody></table></div>"}, {"k": "nota", "texto": "Cada prompt dice <b>en qué plataforma</b> correrlo. No es lo mismo: cada una responde bien una pregunta distinta. Prueba al menos tres."}, {"k": "prompt", "t": "Sondear un efecto", "app": "Consensus", "texto": "¿[X] mejora [Y]? Muéstrame qué dice la evidencia, cuántos estudios la respaldan y dónde hay desacuerdo."}, {"k": "prompt", "t": "Sondear una relación entre variables", "app": "Consensus", "texto": "¿Cómo se relacionan [variable A] y [variable B] en [población o contexto]? Dime qué diseños se han usado para estudiarlo."}, {"k": "prompt", "t": "Armar el panorama del campo", "app": "Elicit", "texto": "Sobre [tu tema], hazme una tabla con los estudios principales. Para cada uno: qué estudiaron, qué método usaron y qué encontraron."}, {"k": "prompt", "t": "¿Está disputada esta afirmación?", "app": "Scite", "texto": "[Pega una afirmación que se repite en tu campo]\n\nMuéstrame quién la apoya, quién la contrasta y quién solo la menciona."}, {"k": "prompt", "t": "Qué se está diciendo ahora", "app": "Perplexity", "texto": "¿Qué se está discutiendo actualmente sobre [tu tema]? Dame las fuentes de cada afirmación."}, {"k": "campos", "t": "Tu sondeo", "items": [{"etiqueta": "Qué me dio cada plataforma que las otras no", "placeholder": "Consensus: ...\nElicit: ...\nScite: ...\nPerplexity: ..."}, {"etiqueta": "Qué estaba citando Perplexity", "placeholder": "¿Papers, blogs, notas de prensa?"}, {"etiqueta": "Términos nuevos que aprendí de mi propio campo", "placeholder": "Los que no había usado en mi string del día 1..."}]}]}, {"id": "b5", "titulo": "Respiro", "desde": 42, "hasta": 45, "tipo": "transicion", "taller": []}, {"id": "b6", "titulo": "Los mapas del campo", "desde": 45, "hasta": 62, "tipo": "demo", "taller": [{"k": "nota", "texto": "<b>Open Knowledge Maps</b> (openknowledgemaps.org) no pide cuenta y arma el mapa desde una consulta. <b>Connected Papers</b> y <b>ResearchRabbit</b> hacen algo parecido pero parten de un artículo semilla."}, {"k": "campos", "t": "Tu mapa", "items": [{"etiqueta": "Relaciones que ya conocías y que el mapa confirma", "placeholder": "..."}, {"etiqueta": "Algo inesperado que apareció", "placeholder": "Dos cosas juntas que creías separadas, un grupo que no esperabas..."}, {"etiqueta": "Sesgos del sistema que percibiste", "placeholder": "¿Todo en inglés? ¿Todo reciente? ¿Alguien de tu región?"}, {"etiqueta": "Términos que usa cada grupo para nombrar lo mismo", "placeholder": "Para sumarlos a tu string..."}]}]}, {"id": "b7", "titulo": "Del sondeo al levantamiento", "desde": 62, "hasta": 74, "tipo": "encuadro", "taller": [{"k": "campo", "t": "Tu string, versión 2", "etiqueta": "Reescríbela agregando el vocabulario que te dio el mapa", "placeholder": "Versión del día 1: ...\nVersión de hoy: ..."}, {"k": "constructor_criterios", "t": "Arma tus criterios de inclusión"}]}, {"id": "b8", "titulo": "Buscar y traerse los metadatos", "desde": 74, "hasta": 94, "tipo": "demo", "taller": [{"k": "texto", "t": "Por qué traerse los metadatos y no escribirlos", "texto": "<p>Cuando exportas desde una base, los datos vienen del editor a través del DOI y de CrossRef: son <b>los mismos</b> que aparecen en la revista. No los escribiste tú, así que no hay erratas, y no los generó un modelo, así que no hay invención. Es exactamente el antídoto contra lo que vimos el día 1.</p><p>Y hay una segunda razón, que se ve más adelante: ese mismo registro es el que después genera la cita en el texto y la lista de referencias final. Lo que capturas bien hoy es trabajo que no vuelves a hacer.</p>"}, {"k": "texto", "t": "Camino A · Armar la bibliografía en Zotero", "texto": "<p><b>1 · Instala dos cosas</b>, no una: el programa Zotero y el <b>conector del navegador</b>. El conector es el que hace casi toda la magia.</p><p><b>2 · Crea una colección</b> con el nombre de tu revisión. Todo lo de este corpus entra ahí y solo ahí.</p><p><b>3 · Mete referencias por cualquiera de estas tres vías:</b></p><ul><li><b>El conector</b>: estando en la página del artículo, un clic en el ícono y entra con metadatos y PDF si está disponible.</li><li><b>Importar el archivo</b> RIS o BibTeX que exportaste de la base. Entra todo el lote de una vez.</li><li><b>Pegar el DOI</b> con el botón de la varita: escribes el DOI y él busca el resto.</li></ul><p><b>4 · Revisa los metadatos.</b> Los campos que llegan mal con más frecuencia son el tipo de publicación y el nombre de la revista (abreviado o en mayúsculas). Se corrigen a mano, una vez, y quedan bien para siempre. <b>Esto es lo que Zotero hace mejor que nada:</b> editar metadatos.</p><p><b>5 · Quita duplicados</b> en la carpeta “Elementos duplicados”: los detecta solo y los fusiona.</p><p><b>6 · Exporta la colección a CSV</b> cuando quieras llevarla a Excel, o a BibTeX si vas a citar desde un procesador de texto.</p>"}, {"k": "nota", "texto": "<b>El gestor no es obligatorio.</b> Zotero y Mendeley son sobre todo buenos <b>editores de metadatos</b> y motores de citación. Para construir tu corpus de 10 a 20 textos puedes saltártelos: exporta el CSV desde la base, ábrelo en Excel y ya tienes el corpus. El gestor empieza a pagar cuando el corpus crece, cuando vas a citar dentro del texto, o cuando trabajan varias personas sobre la misma lista."}, {"k": "texto", "t": "¿Y no puedo pedirle las columnas a la plataforma?", "texto": "<p>Sí, y conviene: en <b>Elicit</b> defines tú las columnas de la matriz, y eso es un mini codebook aplicado en el momento de buscar. Sirve muy bien para <b>decidir qué leer</b>.</p><p>Pero lo que te devuelve es <b>su</b> tabla, no la tuya: no lleva tus reglas de decisión, no distingue “no reportado” de vacío, no guarda dónde lo dice, y se queda dentro de su tope de artículos. Tu codebook es lo que vas a <b>defender</b>, y tiene que sobrevivir a la herramienta.</p><p class=\"mini\"><b>Cómo se combinan:</b> siembra las columnas de Elicit con los campos de tu codebook, exporta lo que te dé, pégalo en tu Excel y verifícalo contra el artículo. Ahorra tipeo, no ahorra lectura.</p>"}, {"k": "texto", "t": "Camino B · Sin gestor, directo a Excel", "texto": "<p><b>1</b> · En la base, marca los resultados que pasan tus criterios.<br><b>2</b> · Exporta la selección en CSV.<br><b>3</b> · Ábrelo en Excel: <b>eso ya es tu corpus</b>.<br><b>4</b> · Agrega a la derecha las columnas de tu codebook.</p><p class=\"mini\">Lo que pierdes por este camino: la deduplicación automática, los PDF adjuntos y la generación de citas. Lo que ganas: empezar ahora mismo sin instalar nada.</p>"}, {"k": "pasos", "t": "Tu cadena, por el camino que hayas elegido", "items": ["Corrí mi string versión 2 en una base con exportación", "Apliqué mis criterios de inclusión al listado", "Exporté el resultado (RIS o BibTeX al gestor, o CSV directo a Excel)", "Revisé los metadatos y corregí lo que llegó mal", "Saqué los duplicados", "Tengo al menos 10 referencias que sí quiero"]}, {"k": "campo", "t": "Dónde se trabó", "etiqueta": "Si algo no funcionó, anótalo aquí (lo vemos al final)", "placeholder": "..."}]}, {"id": "b9", "titulo": "El codebook", "desde": 94, "hasta": 118, "tipo": "hacen", "taller": [{"k": "texto", "t": "Antes de empezar: qué es y qué no es un codebook", "texto": "<p>Tu Excel va a tener <b>dos tipos de columna</b>:</p><p><b>Las que vienen solas</b> (autor, año, título, revista, DOI) llegan con la exportación. Identifican el texto. No dicen nada de su contenido.</p><p><b>Las que exiges leer</b> (diseño, población, n, hallazgo, limitación) las llenas tú, o la IA leyendo el resumen o el PDF. <b>No se deducen de los metadatos.</b> Si alguien te dice que su herramienta “revisa los papers” a partir del listado, no está leyendo nada.</p><p>Entonces el flujo es: exportas (te da las filas), agregas tus columnas vacías, y las llenas leyendo. El ahorro está en no volver a escribir autor, año y revista sesenta veces. El trabajo intelectual sigue siendo tuyo.</p>"}, {"k": "constructor_codebook", "t": "Paso 1 · Que la IA te proponga los campos"}, {"k": "constructor_extraccion", "t": "Paso 2 · El prompt que llena una fila, y tu Excel"}, {"k": "pasos", "t": "Paso 3 · Pruébalo ahora, con dos textos", "items": ["Corrí el prompt de extracción sobre un artículo de mi corpus", "Comparé lo que devolvió con lo que dice el artículo", "Encontré al menos un campo que era imposible de llenar", "Le agregué una regla de decisión a ese campo", "Volví a correrlo y salió mejor"]}, {"k": "campo", "t": "El campo que se rompió", "etiqueta": "¿Cuál campo no se pudo llenar, y qué regla le agregaste?", "placeholder": "Campo: ...\nProblema: ...\nRegla nueva: ..."}]}, {"id": "b10", "titulo": "Para el próximo encuentro", "desde": 118, "hasta": 120, "tipo": "encuadro", "taller": [{"k": "texto", "t": "Cómo hacer la tarea, paso a paso", "texto": "<p><b>Te va a tomar unas dos horas.</b> Hazlo en dos sentadas, no en una.</p><p><b>1 · Cierra tu codebook (20 min).</b> Abre el CSV de definición que descargaste. Deja entre 8 y 12 campos. Para cada uno escribe el tipo, los valores permitidos y qué poner cuando el dato no aparece. Si un campo no sabes definirlo, bórralo: no lo vas a poder llenar diez veces igual.</p><p><b>2 · Elige los 10 textos (20 min).</b> Toma tu lista del gestor y aplícale tus criterios de inclusión, uno por uno. Anota al lado de cada descarte <i>por cuál criterio</i> se cayó. Si te quedan menos de 10, amplía el año o suma un idioma; si te quedan 40, aprieta la población.</p><p><b>3 · Llena las tres primeras filas a mano (30 min).</b> Sin IA. Es lento a propósito: ahí descubres qué campo era imposible y le agregas la regla que le faltaba. Un codebook que nunca se llenó a mano siempre está mal.</p><p><b>4 · Llena las siete restantes con el prompt de extracción (40 min).</b> Una por una, no las siete de golpe. Después de cada una, abre el artículo y revisa dos campos al azar contra el texto.</p><p><b>5 · Anota las discrepancias (10 min).</b> Cada vez que la IA puso algo distinto de lo que dice el artículo, escribe el campo y qué pasó. <b>Eso es el material del día 3</b>, no un fracaso.</p>"}, {"k": "texto", "t": "Cómo se ve un codebook terminado", "texto": "<div class=\"tabla-scroll\"><table class=\"edit\"><thead><tr><th>campo</th><th>qué pregunta responde</th><th>tipo</th><th>valores permitidos</th><th>regla de decisión</th><th>si no aparece</th></tr></thead><tbody><tr><td>autor_ano</td><td>¿Quién y cuándo?</td><td>texto</td><td>—</td><td>primer autor y año</td><td>nunca falta</td></tr><tr><td>diseno</td><td>¿Cómo se produjo la evidencia?</td><td>cerrado</td><td>experimental, cuasi-experimental, correlacional, cualitativo, mixto, revisión</td><td>“estudio de caso múltiple” va como cualitativo</td><td>no reportado</td></tr><tr><td>pais</td><td>¿Dónde se recogieron los datos?</td><td>cerrado</td><td>lista de países</td><td>si hay varios, el de la muestra principal</td><td>no reportado</td></tr><tr><td>n</td><td>¿Cuántos participantes?</td><td>numérico</td><td>entero</td><td>el del análisis principal</td><td>vacío</td></tr><tr><td>hallazgo_principal</td><td>¿Qué encontró?</td><td>verbatim</td><td>cita textual</td><td>copiar del resumen o de conclusiones</td><td>no reportado</td></tr><tr><td>evidencia_donde</td><td>¿Dónde lo dice?</td><td>texto</td><td>sección o página</td><td>siempre obligatorio</td><td>nunca vacío</td></tr></tbody></table></div><p class=\"mini\">Seis campos bien definidos ya sirven. No hacen falta doce.</p>"}, {"k": "pasos", "t": "Está listo cuando...", "items": ["Tengo entre 8 y 12 campos, todos con tipo y regla", "Tengo 10 filas llenas", "La columna de evidencia está completa en las 10", "Sé decir por qué quedó fuera cada texto que descarté", "Anoté las discrepancias entre la IA y yo", "Descargué el archivo y lo tengo listo para el día 3"]}, {"k": "campo", "t": "Tus dudas", "etiqueta": "Si algo se traba durante el fin de semana, escríbelo aquí y lo vemos el día 3", "placeholder": "..."}]}]},SOLO_TALLER=true;
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS='cursoIA-dia'+DATOS.dia;
+
+/* ---------- persistencia ---------- */
+let estado=JSON.parse(localStorage.getItem(LS)||'{}');
+const guardar=()=>localStorage.setItem(LS,JSON.stringify(estado));
+function conectar(el){
+  const k=el.dataset.k; if(!k) return;
+  if(el.type==='checkbox'||el.type==='radio'){ if(estado[k])el.checked=true;
+    el.addEventListener('change',()=>{estado[k]=el.checked;guardar();recalcular();}); }
+  else { if(estado[k]!=null)el.value=estado[k];
+    el.addEventListener('input',()=>{estado[k]=el.value;guardar();recalcular();}); }
+}
+
+/* ---------- modos ---------- */
+function modo(m){
+  if(SOLO_TALLER) m='taller';
+  document.body.dataset.modo=m;
+  $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.modo===m));
+  estado._modo=m; guardar();
+  if(m==='clase') pintar();
+}
+
+/* ---------- modo clase: pantallas ---------- */
+const PANT=[];
+DATOS.bloques.forEach((b,bi)=>(b.pantallas||[]).forEach((p,pi)=>
+  PANT.push({...p,_b:bi,_pi:pi,_n:(b.pantallas||[]).length})));
+let idx=0;
+function pintar(){
+  const p=PANT[idx], b=DATOS.bloques[p._b];
+  /* el titulo del bloque, sin minutos: el horario es del docente, no de la sala */
+  $('#kicker').innerHTML = p.k==='cubierta' ? ''
+    : '<span class="dot" style="color:var(--'+b.tipo+')"></span>'+b.titulo;
+  $('#escena').innerHTML=render(p);
+  $('#puntos').innerHTML=Array.from({length:p._n},(_,i)=>
+    '<i class="'+(i===p._pi?'on':'')+'"></i>').join('');
+  $('#pos').textContent=(idx+1)+' / '+PANT.length;
+  $('#ant').disabled=idx===0; $('#sig').disabled=idx===PANT.length-1;
+  $('#notasLista').innerHTML=(b.guion||[]).map(g=>'<li>'+g+'</li>').join('')||
+    '<li class="mini">Sin notas para este bloque.</li>';
+  bloqueActual=p._b;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function render(p){
+  const li=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(p.k==='cubierta') return '<div class="cubierta"><div class="rotulo">Curso</div>'+
+    '<h1>'+DATOS.curso+'</h1>'+
+    (DATOS.lema?'<div class="lema">'+DATOS.lema+'</div>':'')+
+    '<div class="regla"></div>'+
+    '<div class="dia">Día '+DATOS.dia+'<small>'+DATOS.titulo+'</small></div>'+
+    '<div class="firma">'+DATOS.docente+'</div></div>';
+  if(p.k==='portada') return '<h2>'+p.t+'</h2>'+(p.s?'<p class="sub">'+p.s+'</p>':'');
+  if(p.k==='frase')   return '<p class="frase">'+p.t+'</p>';
+  if(p.k==='lista')   return '<h2>'+p.t+'</h2>'+li(p.items);
+  if(p.k==='dos')     return '<h2>'+p.t+'</h2><div class="dos"><div><h3>'+p.a.t+'</h3>'+
+    li(p.a.items)+'</div><div><h3>'+p.b.t+'</h3>'+li(p.b.items)+'</div></div>';
+  if(p.k==='tabla')   return '<h2>'+p.t+'</h2><table><thead><tr>'+
+    p.head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    p.rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>';
+  if(p.k==='demo')    return '<span class="vivo">En vivo</span><h2>'+p.t+'</h2>'+
+    (p.s?'<p class="sub">'+p.s+'</p>':'')+
+    (p.mirar?'<div class="mirar"><p>Qué mirar</p><ol>'+
+      p.mirar.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>':'');
+  if(p.k==='flujo'){
+    const malla=p.pasos.length>3;
+    return '<h2>'+p.t+'</h2><div class="flujo'+(malla?' malla':'')+'">'+
+      p.pasos.map((x,i)=>((i&&!malla)?'<span class="fl" aria-hidden="true">→</span>':'')+
+        '<div class="paso'+(x.cede?' cede':'')+'"><b>'+x.t+'</b>'+
+        (x.s?'<span>'+x.s+'</span>':'')+'</div>').join('')+'</div>';
+  }
+  if(p.k==='cuadr')   return '<h2>'+p.t+'</h2><div class="cuadr">'+
+    p.items.map(x=>'<div class="c"><b>'+x.t+'</b><span>'+x.s+'</span></div>').join('')+
+    '</div>';
+  if(p.k==='capas')   return '<h2>'+p.t+'</h2><div class="capas">'+
+    p.capas.map(c=>'<div class="cap"><span class="op">'+c.op+'</span>'+c.t+'</div>').join('')+
+    (p.nota?'<p class="nota">'+p.nota+'</p>':'')+'</div>';
+  return '<h2>'+(p.t||'')+'</h2>';
+}
+const ir=d=>{idx=Math.min(PANT.length-1,Math.max(0,idx+d));pintar()};
+
+/* ---------- cronometro ---------- */
+let t0=null,pausa=0,bloqueActual=0;
+function reloj(){
+  const el=$('#reloj');
+  if(!el) return;
+  if(!t0){el.innerHTML='';return}
+  const s=Math.floor((Date.now()-t0)/1000), m=Math.floor(s/60);
+  el.innerHTML='<b>'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'</b>';
+}
+setInterval(reloj,1000);
+
+/* ---------- constructores ---------- */
+function recalcular(){
+  const cp=$('#salidaPrompt');
+  if(cp){
+    const rol=($('[data-k=cp_rol]')||{}).value||'[rol]';
+    const ins=($('[data-k=cp_insumo]')||{}).value||'[tu artefacto]';
+    const cr=($('[data-k=cp_criterios]')||{}).value||'[criterios]';
+    let t='Actúa como '+rol+'.\n\nEsto es lo que quiero que revises:\n'+ins+
+      '\n\nAnalízalo según estos criterios:\n'+cr.split('\n').filter(Boolean)
+      .map(x=>'- '+x).join('\n');
+    $$('[data-mov]:checked').forEach(c=>{t+='\n\n'+c.dataset.texto});
+    cp.textContent=t;
+  }
+  const cs=$('#salidaString');
+  if(cs){
+    const g=[1,2,3].map(i=>(($('[data-k=cs_c'+i+']')||{}).value||'').trim())
+      .filter(Boolean)
+      .map(v=>{const s=v.split(',').map(x=>x.trim()).filter(Boolean)
+        .map(x=>x.includes(' ')?'"'+x+'"':x);
+        return s.length>1?'('+s.join(' OR ')+')':s[0]});
+    const ex=(($('[data-k=cs_not]')||{}).value||'').trim();
+    let out=g.join(' AND ');
+    if(ex){const t=ex.split(',').map(x=>x.trim()).filter(Boolean)
+      .map(x=>x.includes(' ')?'"'+x+'"':x);
+      out+=(out?' ':'')+'NOT '+(t.length>1?'('+t.join(' OR ')+')':t[0]);}
+    cs.textContent=out||'Escribe al menos un concepto arriba.';
+    const n=$('#nParen'); if(n) n.textContent=g.length;
+  }
+  const NL=String.fromCharCode(10);
+  const cr=$('#salidaCriterios');
+  if(cr){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    const marc=n=>$$('[data-crit='+n+']:checked').map(e=>e.dataset.val);
+    const tipos=marc('tipo'), idiomas=marc('idioma'), acceso=marc('acceso');
+    const lista=a=>a.length>1?a.slice(0,-1).join(', ')+' y '+a[a.length-1]:(a[0]||'');
+    cr.textContent=[
+      'CRITERIOS DE INCLUSIÓN','',
+      'Entra un trabajo si cumple todo esto:',
+      '1. Publicado desde '+(v('cr_ano')||'[año]')+' en adelante.',
+      '2. Es de alguno de estos tipos: '+(tipos.length?lista(tipos):'[marca los tipos arriba]')+'.',
+      '3. Está en alguno de estos idiomas: '+(idiomas.length?lista(idiomas):'[marca los idiomas arriba]')+'.',
+      '4. Trata sobre: '+(v('cr_pob')||'[tu población o contexto]')+'.','',
+      'Regla de acceso: '+(acceso[0]||'[elige una opción arriba]')+'.','',
+      'Todo lo que no cumpla los cuatro puntos queda fuera, y se anota por cuál falló.'
+    ].join(NL);
+  }
+  const ck=$('#salidaCodebook');
+  if(ck){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    ck.textContent=[
+      'Actúa como metodólogo con experiencia en revisiones de literatura en ciencias sociales.','',
+      'Mi pregunta de investigación es: '+(v('ck_preg')||'[tu pregunta]'),
+      'Cada fila de mi tabla será: '+(v('ck_unidad')||'[un artículo]'),
+      'Con la tabla terminada quiero poder responder: '+(v('ck_uso')||'[qué quieres poder decir del campo]'),'',
+      'Propón entre 8 y 12 campos para mi tabla de extracción. Para cada campo indica:',
+      '- nombre corto del campo, en minúsculas y sin espacios',
+      '- qué pregunta responde',
+      '- tipo: cerrado, numérico, texto o verbatim',
+      '- si es cerrado, la lista completa de valores permitidos',
+      '- la regla de decisión para los casos dudosos',
+      '- qué poner cuando el dato no aparece en el artículo','',
+      'Incluye siempre un campo de evidencia que registre dónde lo dice: sección o página.',
+      'No propongas campos que yo no pueda llenar leyendo el artículo.',
+      'Si algún campo que sugieres va a ser difícil de llenar de forma consistente, dilo.',
+      'Devuélvelo como tabla.'
+    ].join(NL);
+  }
+  const cx=$('#salidaExtraccion');
+  if(cx){
+    const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+      .map(x=>x.trim()).filter(Boolean));
+    const cols=dados.length?dados:['autor_ano','diseno','n','hallazgo_principal'];
+    cx.textContent=[
+      'Actúa como asistente de extracción de datos para una revisión de literatura.','',
+      'Te voy a dar un artículo. Llena UNA fila de mi tabla con estos campos:'
+    ].concat(cols.map(c=>'- '+c)).concat([
+      '','Este es exactamente el formato que espero:','',
+      '| '+cols.join(' | ')+' | evidencia_donde |',
+      '| '+cols.map(()=>'...').join(' | ')+' | sección o página |','',
+      'Reglas:',
+      '- Para cada campo indica en la columna de evidencia dónde lo dice.',
+      '- Si el dato no aparece, escribe "no reportado". No lo infieras.',
+      '- No resumas el artículo: solo llena los campos.',
+      '- Si dudas entre dos valores, escribe los dos y marca la duda.'
+    ]).join(NL);
+  }
+  const cb=$('#salidaBrecha');
+  if(cb){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    cb.textContent=v('br_x')||v('br_a')||v('br_c')
+      ? (v('br_x')||'[fenómeno]')+' se ha estudiado en '+(v('br_a')||'[contexto A]')+
+        ' y en '+(v('br_b')||'[contexto B]')+', pero no en '+(v('br_c')||'[contexto C]')+'.'
+      : 'Completa los campos para armar la frase.';
+  }
+}
+
+/* ---------- descargar el esqueleto del codebook ---------- */
+function bajarCSV(){
+  const NL=String.fromCharCode(10);
+  const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+    .map(x=>x.trim()).filter(Boolean));
+  const cols=dados.length?dados:['autor_ano','diseno','pais','n','hallazgo_principal'];
+  const def=['campo,que pregunta responde,tipo,valores permitidos,regla de decision,si no aparece']
+    .concat(cols.map(c=>c+',,,,,'))
+    .concat(['evidencia_donde,¿Dónde lo dice?,texto,sección o página,siempre obligatorio,nunca vacío'])
+    .join(NL);
+  const datos=[cols.join(',')+',evidencia_donde']
+    .concat(Array.from({length:10},()=>cols.map(()=>'').join(',')+',')).join(NL);
+  [['codebook-1-definicion.csv',def],['codebook-2-datos.csv',datos]].forEach(function(par){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([String.fromCharCode(65279)+par[1]],
+      {type:'text/csv;charset=utf-8'}));
+    a.download=par[0]; a.click();
+  });
+}
+
+/* ---------- exportar ---------- */
+function exportar(){
+  let md='# Mi trabajo · Día '+DATOS.dia+' · '+DATOS.titulo+'\n\n';
+  $$('#taller .bloque').forEach(b=>{
+    const campos=$$('textarea[data-k],input[type=text][data-k]',b).filter(e=>e.value.trim());
+    const marc=$$('input[type=checkbox][data-k]:checked',b);
+    const sal=$$('.salida',b).filter(e=>e.textContent.trim().length>25);
+    if(!campos.length&&!marc.length&&!sal.length) return;
+    md+='## '+$('h2',b).textContent.trim()+'\n\n';
+    marc.forEach(c=>md+='- [x] '+c.nextElementSibling.textContent.trim()+'\n');
+    if(marc.length) md+='\n';
+    campos.forEach(c=>{
+      const l=c.closest('td')?($$('th',c.closest('table'))[c.closest('td').cellIndex]||{}).textContent
+        :(c.previousElementSibling||{}).textContent;
+      md+='**'+((l||c.dataset.k)+'').trim()+':** '+c.value.trim()+'\n\n';
+    });
+    sal.forEach(s=>md+='```\n'+s.textContent.trim()+'\n```\n\n');
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download='curso-ia-dia'+DATOS.dia+'.md'; a.click();
+}
+
+/* ---------- arranque ---------- */
+addEventListener('DOMContentLoaded',()=>{
+  $$('[data-k]').forEach(conectar);
+  $$('.copiar').forEach(b=>b.addEventListener('click',async()=>{
+    const src=$(b.dataset.dest);
+    await navigator.clipboard.writeText(src.textContent);
+    const o=b.textContent; b.textContent='Copiado'; b.classList.add('ok');
+    setTimeout(()=>{b.textContent=o;b.classList.remove('ok')},1600);
+  }));
+  $('#bExportar').addEventListener('click',exportar);
+  $$('.bajarcsv').forEach(b=>b.addEventListener('click',bajarCSV));
+  if(!SOLO_TALLER){
+    $$('.seg button').forEach(b=>b.addEventListener('click',()=>modo(b.dataset.modo)));
+    $('#ant').addEventListener('click',()=>ir(-1));
+    $('#sig').addEventListener('click',()=>ir(1));
+    $('#bNotas').addEventListener('click',e=>{
+      const n=$('#notas'), o=n.dataset.open!=='true';
+      n.dataset.open=o; e.currentTarget.classList.toggle('on',o);
+    });
+    $('#bReloj').addEventListener('click',e=>{
+      if(t0){t0=null;e.currentTarget.textContent='Cronómetro';e.currentTarget.classList.remove('on')}
+      else{t0=Date.now();e.currentTarget.textContent='Detener';e.currentTarget.classList.add('on')}
+      reloj();
+    });
+    addEventListener('keydown',e=>{
+      if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if(document.body.dataset.modo!=='clase') return;
+      if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();ir(1)}
+      if(e.key==='ArrowLeft'){e.preventDefault();ir(-1)}
+      if(e.key==='n'||e.key==='N'){$('#bNotas').click()}
+    });
+  }
+  const io=new IntersectionObserver(es=>es.forEach(x=>{
+    if(x.isIntersecting)$$('#indice a').forEach(a=>
+      a.classList.toggle('act',a.getAttribute('href')==='#'+x.target.id));
+  }),{rootMargin:'-72px 0px -70% 0px'});
+  $$('#taller .bloque').forEach(b=>io.observe(b));
+  modo(SOLO_TALLER?'taller':(estado._modo||'clase')); recalcular(); reloj();
+});
+</script></body></html>

@@ -229,8 +229,8 @@ let estado=JSON.parse(localStorage.getItem(LS)||'{}');
 const guardar=()=>localStorage.setItem(LS,JSON.stringify(estado));
 function conectar(el){
   const k=el.dataset.k; if(!k) return;
-  if(el.type==='checkbox'){ if(estado[k])el.checked=true;
-    el.addEventListener('change',()=>{estado[k]=el.checked;guardar();}); }
+  if(el.type==='checkbox'||el.type==='radio'){ if(estado[k])el.checked=true;
+    el.addEventListener('change',()=>{estado[k]=el.checked;guardar();recalcular();}); }
   else { if(estado[k]!=null)el.value=estado[k];
     el.addEventListener('input',()=>{estado[k]=el.value;guardar();recalcular();}); }
 }
@@ -307,12 +307,9 @@ let t0=null,pausa=0,bloqueActual=0;
 function reloj(){
   const el=$('#reloj');
   if(!el) return;
-  if(!t0){el.innerHTML='<b>--:--</b> cronómetro parado';el.classList.remove('tarde');return}
+  if(!t0){el.innerHTML='';return}
   const s=Math.floor((Date.now()-t0)/1000), m=Math.floor(s/60);
-  const b=DATOS.bloques[bloqueActual], desfase=m-b.hasta;
-  el.innerHTML='<b>'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'</b> '+
-    (desfase>0?('atrasado '+desfase+' min'):('quedan '+(b.hasta-m)+' min del bloque'));
-  el.classList.toggle('tarde',desfase>0);
+  el.innerHTML='<b>'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'</b>';
 }
 setInterval(reloj,1000);
 
@@ -344,6 +341,64 @@ function recalcular(){
     cs.textContent=out||'Escribe al menos un concepto arriba.';
     const n=$('#nParen'); if(n) n.textContent=g.length;
   }
+  const NL=String.fromCharCode(10);
+  const cr=$('#salidaCriterios');
+  if(cr){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    const marc=n=>$$('[data-crit='+n+']:checked').map(e=>e.dataset.val);
+    const tipos=marc('tipo'), idiomas=marc('idioma'), acceso=marc('acceso');
+    const lista=a=>a.length>1?a.slice(0,-1).join(', ')+' y '+a[a.length-1]:(a[0]||'');
+    cr.textContent=[
+      'CRITERIOS DE INCLUSIÓN','',
+      'Entra un trabajo si cumple todo esto:',
+      '1. Publicado desde '+(v('cr_ano')||'[año]')+' en adelante.',
+      '2. Es de alguno de estos tipos: '+(tipos.length?lista(tipos):'[marca los tipos arriba]')+'.',
+      '3. Está en alguno de estos idiomas: '+(idiomas.length?lista(idiomas):'[marca los idiomas arriba]')+'.',
+      '4. Trata sobre: '+(v('cr_pob')||'[tu población o contexto]')+'.','',
+      'Regla de acceso: '+(acceso[0]||'[elige una opción arriba]')+'.','',
+      'Todo lo que no cumpla los cuatro puntos queda fuera, y se anota por cuál falló.'
+    ].join(NL);
+  }
+  const ck=$('#salidaCodebook');
+  if(ck){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    ck.textContent=[
+      'Actúa como metodólogo con experiencia en revisiones de literatura en ciencias sociales.','',
+      'Mi pregunta de investigación es: '+(v('ck_preg')||'[tu pregunta]'),
+      'Cada fila de mi tabla será: '+(v('ck_unidad')||'[un artículo]'),
+      'Con la tabla terminada quiero poder responder: '+(v('ck_uso')||'[qué quieres poder decir del campo]'),'',
+      'Propón entre 8 y 12 campos para mi tabla de extracción. Para cada campo indica:',
+      '- nombre corto del campo, en minúsculas y sin espacios',
+      '- qué pregunta responde',
+      '- tipo: cerrado, numérico, texto o verbatim',
+      '- si es cerrado, la lista completa de valores permitidos',
+      '- la regla de decisión para los casos dudosos',
+      '- qué poner cuando el dato no aparece en el artículo','',
+      'Incluye siempre un campo de evidencia que registre dónde lo dice: sección o página.',
+      'No propongas campos que yo no pueda llenar leyendo el artículo.',
+      'Si algún campo que sugieres va a ser difícil de llenar de forma consistente, dilo.',
+      'Devuélvelo como tabla.'
+    ].join(NL);
+  }
+  const cx=$('#salidaExtraccion');
+  if(cx){
+    const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+      .map(x=>x.trim()).filter(Boolean));
+    const cols=dados.length?dados:['autor_ano','diseno','n','hallazgo_principal'];
+    cx.textContent=[
+      'Actúa como asistente de extracción de datos para una revisión de literatura.','',
+      'Te voy a dar un artículo. Llena UNA fila de mi tabla con estos campos:'
+    ].concat(cols.map(c=>'- '+c)).concat([
+      '','Este es exactamente el formato que espero:','',
+      '| '+cols.join(' | ')+' | evidencia_donde |',
+      '| '+cols.map(()=>'...').join(' | ')+' | sección o página |','',
+      'Reglas:',
+      '- Para cada campo indica en la columna de evidencia dónde lo dice.',
+      '- Si el dato no aparece, escribe "no reportado". No lo infieras.',
+      '- No resumas el artículo: solo llena los campos.',
+      '- Si dudas entre dos valores, escribe los dos y marca la duda.'
+    ]).join(NL);
+  }
   const cb=$('#salidaBrecha');
   if(cb){
     const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
@@ -352,6 +407,26 @@ function recalcular(){
         ' y en '+(v('br_b')||'[contexto B]')+', pero no en '+(v('br_c')||'[contexto C]')+'.'
       : 'Completa los campos para armar la frase.';
   }
+}
+
+/* ---------- descargar el esqueleto del codebook ---------- */
+function bajarCSV(){
+  const NL=String.fromCharCode(10);
+  const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+    .map(x=>x.trim()).filter(Boolean));
+  const cols=dados.length?dados:['autor_ano','diseno','pais','n','hallazgo_principal'];
+  const def=['campo,que pregunta responde,tipo,valores permitidos,regla de decision,si no aparece']
+    .concat(cols.map(c=>c+',,,,,'))
+    .concat(['evidencia_donde,¿Dónde lo dice?,texto,sección o página,siempre obligatorio,nunca vacío'])
+    .join(NL);
+  const datos=[cols.join(',')+',evidencia_donde']
+    .concat(Array.from({length:10},()=>cols.map(()=>'').join(',')+',')).join(NL);
+  [['codebook-1-definicion.csv',def],['codebook-2-datos.csv',datos]].forEach(function(par){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([String.fromCharCode(65279)+par[1]],
+      {type:'text/csv;charset=utf-8'}));
+    a.download=par[0]; a.click();
+  });
 }
 
 /* ---------- exportar ---------- */
@@ -387,6 +462,7 @@ addEventListener('DOMContentLoaded',()=>{
     setTimeout(()=>{b.textContent=o;b.classList.remove('ok')},1600);
   }));
   $('#bExportar').addEventListener('click',exportar);
+  $$('.bajarcsv').forEach(b=>b.addEventListener('click',bajarCSV));
   if(!SOLO_TALLER){
     $$('.seg button').forEach(b=>b.addEventListener('click',()=>modo(b.dataset.modo)));
     $('#ant').addEventListener('click',()=>ir(-1));
