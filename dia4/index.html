@@ -1,0 +1,541 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Herramientas IA para revisión de Literatura · Día 4</title><style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfaf7; --fg:#16130f; --muted:#6b625a; --line:#e2ddd4; --card:#fff;
+  --encuadro:#2f5d8a; --hacen:#2c6e52; --discusion:#6a4a8f; --wow:#b45309;
+  --transicion:#77706a; --accent:#8a3d1f; --demo:#b45309;
+  --r:10px; --pad:clamp(1rem,3vw,2.5rem);
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14120f;--fg:#f2eee7;--muted:#a89e94;--line:#332e28;--card:#1c1915;
+        --encuadro:#7fb0dd;--hacen:#6fc39a;--discusion:#b394dd;--wow:#e9a13b;
+        --transicion:#9a938c;--accent:#e08c62;--demo:#e9a13b}
+}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.15;margin:0}
+p{margin:0 0 .8em}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- barra superior ---------- */
+.bar{position:fixed;inset:0 0 auto 0;height:52px;z-index:50;display:flex;
+  align-items:center;gap:.75rem;padding:0 1rem;background:var(--bg);
+  border-bottom:1px solid var(--line)}
+.bar .dia{font-family:var(--serif);font-weight:600;white-space:nowrap}
+.bar .sep{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{background:none;border:0;padding:.35rem .95rem;font-size:.85rem;
+  color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.chip{font-size:.8rem;color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:.3rem .7rem;background:none;white-space:nowrap}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.reloj{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted);
+  white-space:nowrap}
+.reloj b{color:var(--fg);font-weight:600}
+.reloj.tarde b,.reloj.tarde{color:var(--wow)}
+
+/* ---------- modo clase ---------- */
+#clase{display:none;padding-top:52px;min-height:100vh;flex-direction:column}
+body[data-modo=clase] #clase{display:flex}
+.escena{flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:var(--pad);max-width:1180px;margin:0 auto;width:100%}
+.kicker{font-size:clamp(.8rem,1.4vw,1rem);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.6rem}
+.kicker .dot{width:.6em;height:.6em;border-radius:50%;background:currentColor}
+.escena h2{font-size:clamp(1.9rem,4.6vw,3.4rem);margin-bottom:1.2rem;max-width:22ch}
+.escena .sub{font-size:clamp(1.05rem,2vw,1.5rem);color:var(--muted);max-width:44ch}
+.escena ul{font-size:clamp(1.05rem,2.1vw,1.6rem);margin:0;padding-left:1.4em;
+  max-width:36ch}
+.escena ul li{margin-bottom:.55em}
+.escena .frase{font-family:var(--serif);font-size:clamp(1.6rem,4vw,3rem);
+  line-height:1.25;max-width:20ch;border-left:5px solid var(--accent);padding-left:.6em}
+.escena table{width:100%;border-collapse:collapse;font-size:clamp(.85rem,1.5vw,1.15rem)}
+.escena th,.escena td{text-align:left;padding:.7em .8em;border-bottom:1px solid var(--line);
+  vertical-align:top}
+.escena th{font-size:.85em;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  font-weight:600}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem)}
+.dos h3{font-size:clamp(1.1rem,2.2vw,1.7rem);margin-bottom:.7rem}
+.dos ul{font-size:clamp(.95rem,1.7vw,1.25rem);max-width:none}
+@media (max-width:720px){.dos{grid-template-columns:1fr}}
+
+.cubierta{display:flex;flex-direction:column;gap:0}
+.cubierta .rotulo{font-size:clamp(.7rem,1.2vw,.9rem);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:1.4rem}
+.cubierta h1{font-family:var(--serif);font-weight:600;line-height:1.08;
+  font-size:clamp(2.1rem,5.4vw,4.2rem);max-width:18ch;margin:0}
+.cubierta .lema{font-family:var(--serif);font-style:italic;color:var(--muted);
+  font-size:clamp(1.1rem,2.4vw,1.9rem);margin-top:.5rem}
+.cubierta .regla{width:clamp(60px,9vw,120px);height:4px;background:var(--accent);
+  margin:clamp(1.4rem,3vw,2.4rem) 0}
+.cubierta .dia{font-size:clamp(1rem,2vw,1.5rem);font-weight:600}
+.cubierta .dia small{display:block;font-weight:400;color:var(--muted);
+  font-size:clamp(.9rem,1.7vw,1.25rem);margin-top:.2rem}
+.cubierta .firma{margin-top:clamp(1.6rem,4vw,3rem);font-size:clamp(.9rem,1.6vw,1.2rem);
+  color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem}
+
+/* ---------- esquemas de proyección ---------- */
+.flujo{display:flex;gap:.5rem;align-items:stretch;flex-wrap:wrap;margin-top:1.5rem}
+.flujo.malla{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem}
+.flujo .paso{flex:1 1 150px;border:2px solid var(--line);border-radius:var(--r);
+  padding:clamp(.7rem,1.6vw,1.2rem);display:flex;flex-direction:column;gap:.35rem}
+.flujo .paso b{font-family:var(--serif);font-size:clamp(1rem,1.9vw,1.4rem);line-height:1.2}
+.flujo .paso span{font-size:clamp(.78rem,1.25vw,1rem);color:var(--muted);line-height:1.35}
+.flujo .paso.cede{border-color:var(--wow);border-width:3px}
+.flujo .paso.cede b{color:var(--wow)}
+.flujo .fl{align-self:center;color:var(--line);font-size:clamp(1.2rem,2.4vw,2rem);
+  line-height:1;flex:0 0 auto}
+@media (max-width:640px){.flujo{flex-direction:column}.flujo .fl{transform:rotate(90deg)}}
+
+.cuadr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,3vw,2.2rem);margin-top:1.6rem}
+.cuadr .c{border-top:4px solid var(--accent);padding-top:.8rem}
+.cuadr .c b{display:block;font-family:var(--serif);font-size:clamp(1.15rem,2.6vw,2rem);
+  line-height:1.15;margin-bottom:.35rem}
+.cuadr .c span{font-size:clamp(.85rem,1.5vw,1.15rem);color:var(--muted);line-height:1.4}
+@media (max-width:640px){.cuadr{grid-template-columns:1fr;gap:1rem}}
+
+.capas{margin-top:1.6rem;font-family:ui-monospace,Menlo,monospace}
+.capas .cap{border:2px solid var(--line);border-radius:var(--r);
+  padding:clamp(.6rem,1.4vw,1rem);margin-bottom:.6rem;display:flex;align-items:center;
+  gap:.7rem;flex-wrap:wrap;font-size:clamp(.85rem,1.7vw,1.3rem)}
+.capas .cap .op{font-family:var(--sans);font-weight:700;color:var(--accent);
+  font-size:clamp(.7rem,1.2vw,.9rem);letter-spacing:.08em}
+.capas .nota{font-family:var(--sans);color:var(--muted);
+  font-size:clamp(.8rem,1.4vw,1.05rem);margin-top:.9rem}
+
+.casos .caso{border-top:1px solid var(--line);padding:.9rem 0}
+.casos .caso:first-child{border-top:0;padding-top:0}
+.casos .q{font-size:.95rem;margin:0 0 .6rem}
+.casos .ops{display:flex;gap:1.1rem;flex-wrap:wrap;margin-bottom:.5rem}
+.casos .ops label{display:flex;gap:.4rem;align-items:center;font-size:.87rem;cursor:pointer}
+.casos .ops input{accent-color:var(--accent)}
+.casos .pq{font-size:.85rem}
+
+/* ---------- pantalla de demostración ---------- */
+.vivo{display:inline-flex;align-items:center;gap:.5rem;font-size:clamp(.75rem,1.3vw,1rem);
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--wow);
+  border:2px solid var(--wow);border-radius:999px;padding:.3rem .9rem;margin-bottom:1.4rem}
+.vivo::before{content:"";width:.6em;height:.6em;border-radius:50%;background:var(--wow)}
+.mirar{margin-top:1.8rem;border-top:1px solid var(--line);padding-top:1.1rem}
+.mirar p{font-size:clamp(.78rem,1.2vw,.95rem);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.7rem}
+.mirar ol{font-size:clamp(1rem,1.9vw,1.4rem);margin:0;padding-left:1.3em;max-width:40ch}
+.mirar li{margin-bottom:.4em}
+.pie{display:flex;align-items:center;gap:1rem;padding:.7rem var(--pad) 1.1rem;
+  border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+.puntos{display:flex;gap:.35rem}
+.puntos i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+.puntos i.on{background:var(--fg)}
+.nav{margin-left:auto;display:flex;gap:.4rem}
+.nav button{background:none;border:1px solid var(--line);border-radius:var(--r);
+  padding:.4rem .8rem}
+.nav button[disabled]{opacity:.35;cursor:default}
+
+/* ---------- notas del docente ---------- */
+#notas{position:fixed;right:0;top:52px;bottom:0;width:min(380px,88vw);z-index:40;
+  background:var(--card);border-left:1px solid var(--line);padding:1.2rem;
+  overflow:auto;transform:translateX(100%);transition:transform .18s ease}
+#notas[data-open=true]{transform:none}
+#notas h3{font-size:1rem;margin-bottom:.8rem}
+#notas li{margin-bottom:.7rem;font-size:.92rem}
+@media (prefers-reduced-motion:reduce){#notas{transition:none}}
+
+/* ---------- modo taller ---------- */
+#taller{display:none;padding-top:52px}
+body[data-modo=taller] #taller{display:block}
+.envoltura{max-width:1140px;margin:0 auto;padding:2rem var(--pad) 5rem;
+  display:grid;grid-template-columns:200px 1fr;gap:2.5rem;align-items:start}
+@media (max-width:860px){.envoltura{grid-template-columns:1fr;gap:1.2rem}
+  #indice{position:static;max-height:none}}
+#indice{position:sticky;top:72px;font-size:.85rem;max-height:calc(100vh - 96px);
+  overflow:auto}
+#indice .fase{font-weight:600;margin:1rem 0 .4rem;font-size:.72rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+#indice a{display:block;padding:.25rem 0;color:var(--fg);text-decoration:none;
+  border-left:2px solid var(--line);padding-left:.6rem}
+#indice a:hover,#indice a.act{border-left-color:var(--accent);color:var(--accent)}
+.intro{margin-bottom:2.5rem}
+.intro h1{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:.6rem}
+.intro .idea{font-family:var(--serif);font-size:1.15rem;color:var(--muted);
+  border-left:4px solid var(--accent);padding-left:1rem;max-width:60ch}
+.bloque{margin-bottom:3rem;scroll-margin-top:72px}
+.bloque > header{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;
+  padding-bottom:.6rem;margin-bottom:1.1rem;border-bottom:2px solid var(--line)}
+.bloque h2{font-size:1.35rem}
+.etq{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:.22rem .55rem;border-radius:4px;color:#fff;white-space:nowrap}
+.min{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.tarj{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:1.1rem 1.2rem;margin-bottom:1rem}
+.tarj > h3{font-size:1rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.tarj p:last-child{margin-bottom:0}
+.nota{border-left:4px solid var(--wow);background:var(--card);padding:.9rem 1.1rem;
+  border-radius:0 var(--r) var(--r) 0;margin-bottom:1rem;font-size:.95rem}
+pre{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:.9rem 1rem;overflow:auto;font-size:.85rem;line-height:1.5;white-space:pre-wrap;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.copiar{display:inline-flex;align-items:center;gap:.4rem;margin-top:.6rem;
+  background:none;border:1px solid var(--line);border-radius:var(--r);padding:.4rem .8rem;
+  font-size:.82rem}
+.copiar.ok{border-color:var(--hacen);color:var(--hacen)}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{margin-bottom:.5rem}
+.chk label{display:flex;gap:.6rem;align-items:flex-start;cursor:pointer;font-size:.95rem}
+.chk input{margin-top:.28em;width:1.05em;height:1.05em;accent-color:var(--accent);flex:none}
+.chk input:checked + span{color:var(--muted);text-decoration:line-through}
+textarea,input[type=text]{width:100%;font:inherit;font-size:.92rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:.6rem .7rem;resize:vertical}
+textarea{min-height:5.5rem}
+label.campo{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
+.rejilla{display:grid;gap:.9rem}
+@media (min-width:700px){.rejilla.c2{grid-template-columns:1fr 1fr}}
+table.edit{width:100%;border-collapse:collapse;font-size:.85rem}
+table.edit th{text-align:left;padding:.4rem .5rem;border-bottom:2px solid var(--line);
+  font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+table.edit td{padding:.2rem;border-bottom:1px solid var(--line)}
+table.edit input{border:0;background:none;padding:.45rem .5rem;border-radius:4px}
+table.edit input:focus{background:var(--card)}
+.tabla-scroll{overflow-x:auto;margin-bottom:.8rem}
+.mini{font-size:.82rem;color:var(--muted)}
+.salida{background:var(--bg);border:1px dashed var(--line);border-radius:var(--r);
+  padding:.9rem 1rem;font-family:ui-monospace,Menlo,monospace;font-size:.85rem;
+  white-space:pre-wrap;min-height:3rem;margin-top:.8rem}
+.exportar{position:fixed;right:1rem;bottom:1rem;z-index:45;background:var(--accent);
+  color:#fff;border:0;border-radius:999px;padding:.75rem 1.3rem;font-size:.9rem;
+  box-shadow:0 6px 20px rgba(0,0,0,.18)}
+body[data-modo=clase] .exportar{display:none}
+</style></head><body data-modo="taller"><header class="bar"><span class="dia">Día 4</span><span class="sep"></span><span class="mini">Qué más puede ser una revisión de literatura</span></header><div id="taller"><div class="envoltura"><nav id="indice" aria-label="Bloques"><div class="fase">Qué más puede ser</div><a href="#b1">La pregunta del día</a><a href="#b2">El catálogo, por público</a><a href="#b3">Dónde empieza el código</a><div class="fase">Construir sin código</div><a href="#b4">Sin código: de tu tabla a una página</a><a href="#b5">Ahora la tuya</a><a href="#b6">Respiro</a><div class="fase">Dónde empieza el código</div><a href="#b7">Con código: un caso real</a><a href="#b8">Publicarla, si quieres</a><a href="#b9">Lo que se llevan</a></nav><div><div class="intro"><p class="mini" style="letter-spacing:.16em;text-transform:uppercase">Herramientas IA para revisión de Literatura</p><h1>Día 4. Qué más puede ser una revisión de literatura</h1><p class="idea">Una revisión no tiene que terminar en un capítulo. Es <b>infraestructura</b>: una tabla bien hecha puede convertirse en muchas cosas, y algunas llegan a públicos que nunca van a leer tu artículo. Hoy construimos una, y vemos dónde termina lo que se hace conversando y dónde empieza lo que exige código.</p><p class="mini" style="margin-top:.9rem">Dr. Gabriel Fortes</p></div><section class="bloque" id="b1"><header><span class="etq" style="background:var(--discusion)">Discusión</span><h2>La pregunta del día</h2></header><div class="tarj"><h3>Antes de ver la lista</h3><label class="campo" for="b1-c0">¿Qué se te ocurre a ti? Escríbelo antes de que lo discutamos</label><textarea id="b1-c0" data-k="b1-c0" placeholder="..."></textarea></div></section><section class="bloque" id="b2"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>El catálogo, por público</h2></header><div class="tarj"><h3>El catálogo completo</h3><div class="tabla-scroll"><table class="edit"><thead><tr><th>Para quién</th><th>Qué puede ser</th><th>Formato típico</th></tr></thead><tbody><tr><td><b>Tú, en seis meses</b></td><td>Biblioteca navegable y buscable · banco de citas por tema</td><td>Página HTML, hoja de cálculo</td></tr><tr><td><b>Tu grupo</b></td><td>Base compartida que crece · protocolo reutilizable de tu método</td><td>Repositorio, documento vivo</td></tr><tr><td><b>Tus estudiantes</b></td><td>Material de clase · fichas · seminario armado desde tu corpus</td><td>Presentación, fichas, página</td></tr><tr><td><b>Quien decide</b></td><td>Guía práctica · brief con lo que sirve para actuar</td><td>Dos páginas, o una web</td></tr><tr><td><b>El campo</b></td><td>Mapa del área · panel que se actualiza · alerta temática</td><td>Visualización, sitio, boletín</td></tr><tr><td><b>Tu proyecto</b></td><td>La brecha convertida en propuesta o postulación</td><td>Documento de proyecto</td></tr></tbody></table></div></div><div class="tarj"><h3>Elige una</h3><label class="campo" for="b2-c1">¿Cuál de estas salidas te sirve a ti, y para quién?</label><textarea id="b2-c1" data-k="b2-c1" placeholder="Salida: ...
+Para quién: ...
+Por qué la necesita: ..."></textarea></div></section><section class="bloque" id="b3"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>Dónde empieza el código</h2></header><div class="tarj"><h3>Las dos preguntas que deciden</h3><p><b>1 · ¿Es una cosa, o es un proceso?</b><br>Una cosa es un archivo que produces y te llevas. Un proceso es algo que vuelve a ocurrir cuando cambian los datos.</p><p><b>2 · ¿Lo haces una vez, o lo vas a rehacer?</b><br>Si es una vez, el chat te basta y te sobra. Si vas a rehacerlo cada vez que tu tabla crezca, necesitas que esté escrito como instrucción ejecutable.</p><p class="mini">La línea no es de dificultad: es de repetición. Muchas cosas difíciles se hacen conversando una sola vez.</p></div></section><section class="bloque" id="b4"><header><span class="etq" style="background:var(--demo)">Demostración</span><h2>Sin código: de tu tabla a una página</h2></header><div class="tarj"><h3>De tu CSV a una página navegable <span class="etq" style="background:var(--encuadro);font-size:.62rem">Claude · ChatGPT · Gemini</span></h3><pre id="b4-p0">Actúa como desarrollador web.
+
+Quiero convertir la tabla de mi revisión de literatura en una página que pueda abrir, buscar y compartir.
+
+Te adjunto mi CSV. Cada fila es un artículo.
+
+Constrúyeme un archivo HTML ÚNICO y autocontenido, sin librerías externas ni CDN, que funcione al abrirlo con doble clic y sin conexión a internet.
+
+Debe tener:
+- un buscador que filtre por texto mientras escribo
+- filtros por año, por diseño y por tema
+- una tarjeta por artículo con autor, año, título, revista y hallazgo principal
+- enlace al DOI cuando exista
+- un contador de cuántos artículos se están mostrando
+- que se vea bien en el celular
+
+Encabezado con el título de mi revisión y mi nombre.
+Estilo sobrio y legible, tipografía grande, sin decoración innecesaria.
+
+No inventes datos: usa solo lo que está en mi CSV. Si un campo está vacío o dice "no reportado", muéstralo así o déjalo en blanco, pero no lo completes.
+
+MI CSV:
+[ADJÚNTALO O PÉGALO AQUÍ]</pre><button class="copiar" data-dest="#b4-p0">Copiar</button></div><div class="tarj"><h3>La segunda vuelta, para afinarla <span class="etq" style="background:var(--encuadro);font-size:.62rem">Claude · ChatGPT · Gemini</span></h3><pre id="b4-p1">Está bien, pero quiero estos cambios:
+
+- [qué agregar o quitar]
+- [qué ordenar distinto]
+- [qué no se entiende]
+
+Devuélveme el archivo completo otra vez, no solo el fragmento que cambió.</pre><button class="copiar" data-dest="#b4-p1">Copiar</button></div></section><section class="bloque" id="b5"><header><span class="etq" style="background:var(--hacen)">Ejercicio</span><h2>Ahora la tuya</h2></header><div class="tarj"><h3>En estos minutos</h3><ul class="chk"><li><label><input type="checkbox" data-k="b5-k0-0"><span>Corrí el prompt con mi CSV</span></label></li><li><label><input type="checkbox" data-k="b5-k0-1"><span>Abrí el archivo y lo probé: busqué, filtré</span></label></li><li><label><input type="checkbox" data-k="b5-k0-2"><span>Pedí al menos un cambio en la segunda vuelta</span></label></li><li><label><input type="checkbox" data-k="b5-k0-3"><span>Lo descargué y lo guardé donde lo voy a encontrar</span></label></li><li><label><input type="checkbox" data-k="b5-k0-4"><span>Se lo mandé a alguien, o me lo mandé a mí</span></label></li></ul></div><div class="tarj"><h3>Cómo te fue</h3><div class="rejilla c2"><div><label class="campo" for="b5-f10">Qué le pedí en la segunda vuelta</label><textarea id="b5-f10" data-k="b5-f10" placeholder="..."></textarea></div><div><label class="campo" for="b5-f11">Qué NO logré que hiciera</label><textarea id="b5-f11" data-k="b5-f11" placeholder="..."></textarea></div><div><label class="campo" for="b5-f12">A quién se lo mandaría</label><textarea id="b5-f12" data-k="b5-f12" placeholder="..."></textarea></div></div></div></section><section class="bloque" id="b6"><header><span class="etq" style="background:var(--transicion)">Respiro</span><h2>Respiro</h2></header><p class="mini">Bloque expositivo. Nada que completar aquí.</p></section><section class="bloque" id="b7"><header><span class="etq" style="background:var(--demo)">Demostración</span><h2>Con código: un caso real</h2></header><div class="tarj"><h3>El caso: la Matriz Documental del Observatorio</h3><p>45 documentos de política educacional brasileña, desde la Constitución de 1988, clasificados por categoría, año, órgano responsable, nivel de enseñanza y dimensión de equidad, cada uno con enlace a su fuente oficial.</p><p>La estructura del proyecto es así:</p><pre>matriz_documentos/
+  index.html                     la página publicada
+  data/matriz_documentos.xlsx    ← la tabla que se edita
+  scripts/02_construir_matriz.R  ← regenera la página desde la tabla</pre><p>Y la cabecera del script dice, literalmente:</p><pre>Lee el Excel (matriz_documentos.xlsx) y regenera el HTML
+(index.html), inyectando el array DADOS en el script.
+
+Ejecútalo cada vez que edites el Excel.</pre><p><b>Ahí está la diferencia entera.</b> La página no se edita: se regenera. Se mantiene una tabla, y el sitio sale de ella.</p></div><div class="tarj"><h3>Qué necesitarías para hacer algo así</h3><p><b>Una cuenta y una instalación.</b> Claude Code, o alguna herramienta equivalente que pueda leer y escribir archivos en tu computador.</p><p><b>Un poco de tolerancia al error.</b> La primera vez algo va a fallar. La diferencia con el chat es que aquí el error se arregla y queda arreglado para siempre.</p><p><b>Y una razón real.</b> Si tu tabla no va a crecer, no lo necesitas. Si vas a estar agregando artículos durante dos años de tesis, sí.</p><p class="mini">Nadie tiene que salir de aquí instalando nada. Lo que sí conviene salir sabiendo es <b>reconocer cuándo tu problema es de los que necesitan esto</b>, para pedir ayuda con precisión.</p></div><div class="tarj"><h3>Tu caso</h3><label class="campo" for="b7-c2">¿Lo tuyo es una cosa o un proceso? ¿Por qué?</label><textarea id="b7-c2" data-k="b7-c2" placeholder="..."></textarea></div></section><section class="bloque" id="b8"><header><span class="etq" style="background:var(--hacen)">Ejercicio</span><h2>Publicarla, si quieres</h2></header><div class="tarj"><h3>Si quieres publicarla</h3><p>La ruta más corta: una cuenta gratuita de GitHub, un repositorio nuevo, subir tu archivo con el nombre <code>index.html</code>, y activar Pages en <i>Settings → Pages → Deploy from a branch → main</i>.</p><p>En unos minutos tienes una dirección propia.</p><p class="mini">No es obligatorio. El archivo descargado ya abre, ya se busca y ya se manda. Publicar sirve si prefieres mandar un enlace, o si vas a actualizarlo.</p></div><div class="tarj"><h3>Antes de publicar, revisa</h3><ul class="chk"><li><label><input type="checkbox" data-k="b8-k1-0"><span>No hay notas personales mías en la tabla</span></label></li><li><label><input type="checkbox" data-k="b8-k1-1"><span>No hay comentarios sobre colegas ni sobre revisores</span></label></li><li><label><input type="checkbox" data-k="b8-k1-2"><span>No hay datos de personas sin su permiso</span></label></li><li><label><input type="checkbox" data-k="b8-k1-3"><span>Estoy de acuerdo con que esto sea público y quede indexado</span></label></li></ul></div></section><section class="bloque" id="b9"><header><span class="etq" style="background:var(--encuadro)">Encuadre</span><h2>Lo que se llevan</h2></header><div class="tarj"><h3>Tu declaración de uso, ahora completa</h3><div><label class="campo" for="dc_herr">Herramientas que usé</label><input type="text" id="dc_herr" data-k="dc_herr" placeholder="ChatGPT, Consensus, Zotero, NotebookLM..."></div><p class="mini" style="margin:1rem 0 .4rem">Para qué las usé</p><ul class="chk"><li><label><input type="checkbox" data-dec data-val="buscar literatura" data-k="dc_u0"><span>buscar literatura</span></label></li><li><label><input type="checkbox" data-dec data-val="organizar el corpus" data-k="dc_u1"><span>organizar el corpus</span></label></li><li><label><input type="checkbox" data-dec data-val="extraer datos al codebook" data-k="dc_u2"><span>extraer datos al codebook</span></label></li><li><label><input type="checkbox" data-dec data-val="análisis descriptivo" data-k="dc_u3"><span>análisis descriptivo</span></label></li><li><label><input type="checkbox" data-dec data-val="corrección de estilo o gramática" data-k="dc_u4"><span>corrección de estilo o gramática</span></label></li><li><label><input type="checkbox" data-dec data-val="traducción" data-k="dc_u5"><span>traducción</span></label></li><li><label><input type="checkbox" data-dec data-val="generar código (R, Python)" data-k="dc_u6"><span>generar código (R, Python)</span></label></li></ul><p class="mini" style="margin:1rem 0 .4rem">Qué hice con lo que devolvió</p><div style="margin-bottom:1rem"><label style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><input type="radio" name="dc_uso" data-dec2 data-val="como punto de partida, reescrito por mí" data-k="dc_r0"><span>como punto de partida, reescrito por mí</span></label><label style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><input type="radio" name="dc_uso" data-dec2 data-val="para contrastar con lo que yo ya había hecho" data-k="dc_r1"><span>para contrastar con lo que yo ya había hecho</span></label><label style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><input type="radio" name="dc_uso" data-dec2 data-val="como borrador inicial, después editado" data-k="dc_r2"><span>como borrador inicial, después editado</span></label></div><div><label class="campo" for="dc_rev">Cómo lo verifiqué</label><textarea id="dc_rev" data-k="dc_rev" placeholder="Abrí cada artículo y comprobé los campos contra el texto..."></textarea></div><div style="margin-top:.9rem"><label class="campo" for="dc_lim">Qué límites reconozco</label><textarea id="dc_lim" data-k="dc_lim" placeholder="El corpus se limita a lo indexado en... y a lo publicado desde..."></textarea></div><div class="salida" id="salidaDecl"></div><button class="copiar" data-dest="#salidaDecl">Copiar mi declaración</button></div><div class="tarj"><h3>Lo que sigue</h3><label class="campo" for="b9-c1">¿Qué otra salida del catálogo vas a construir, y para cuándo?</label><textarea id="b9-c1" data-k="b9-c1" placeholder="Voy a construir: ...
+Para: ...
+Antes de: ..."></textarea></div><div class="tarj"><h3>Antes de cerrar la página</h3><ul class="chk"><li><label><input type="checkbox" data-k="b9-k2-0"><span>Descargué mi trabajo de los cuatro días</span></label></li><li><label><input type="checkbox" data-k="b9-k2-1"><span>Guardé mi página en un lugar donde la voy a encontrar</span></label></li><li><label><input type="checkbox" data-k="b9-k2-2"><span>Terminé mi declaración de uso</span></label></li><li><label><input type="checkbox" data-k="b9-k2-3"><span>Anoté qué voy a construir después</span></label></li></ul></div><div class="nota">Todo el material del curso queda publicado en <b>gabrielfortes-xdglab.github.io/ia-revision-literatura</b>. Los cuatro días, con sus prompts y sus plantillas, para volver cuando los necesites.</div></section></div></div></div><button class="exportar" id="bExportar">Descargar mi trabajo</button><script>const DATOS={"dia": 4, "curso": "Herramientas IA para revisión de Literatura", "lema": "una introducción práctica", "docente": "Dr. Gabriel Fortes", "titulo": "Qué más puede ser una revisión de literatura", "idea": "Una revisión no tiene que terminar en un capítulo. Es <b>infraestructura</b>: una tabla bien hecha puede convertirse en muchas cosas, y algunas llegan a públicos que nunca van a leer tu artículo. Hoy construimos una, y vemos dónde termina lo que se hace conversando y dónde empieza lo que exige código.", "duracion": 120, "checklist": ["Matriz Documental del Observatorio abierta en tres pestañas: la página, el Excel y el script", "Mi CSV de ejemplo listo para la demostración sin código", "Una página de ejemplo YA generada, por si la demostración en vivo falla", "El sitio del curso abierto: es el cierre del cierre", "Cuenta de GitHub lista, si alguien quiere publicar", "Enlace del taller del día 4 publicado y enviado"], "fases": [{"nombre": "Qué más puede ser", "bloques": ["b1", "b2", "b3"]}, {"nombre": "Construir sin código", "bloques": ["b4", "b5", "b6"]}, {"nombre": "Dónde empieza el código", "bloques": ["b7", "b8", "b9"]}], "bloques": [{"id": "b1", "titulo": "La pregunta del día", "desde": 0, "hasta": 14, "tipo": "discusion", "taller": [{"k": "campo", "t": "Antes de ver la lista", "etiqueta": "¿Qué se te ocurre a ti? Escríbelo antes de que lo discutamos", "placeholder": "..."}]}, {"id": "b2", "titulo": "El catálogo, por público", "desde": 14, "hasta": 26, "tipo": "encuadro", "taller": [{"k": "texto", "t": "El catálogo completo", "texto": "<div class=\"tabla-scroll\"><table class=\"edit\"><thead><tr><th>Para quién</th><th>Qué puede ser</th><th>Formato típico</th></tr></thead><tbody><tr><td><b>Tú, en seis meses</b></td><td>Biblioteca navegable y buscable · banco de citas por tema</td><td>Página HTML, hoja de cálculo</td></tr><tr><td><b>Tu grupo</b></td><td>Base compartida que crece · protocolo reutilizable de tu método</td><td>Repositorio, documento vivo</td></tr><tr><td><b>Tus estudiantes</b></td><td>Material de clase · fichas · seminario armado desde tu corpus</td><td>Presentación, fichas, página</td></tr><tr><td><b>Quien decide</b></td><td>Guía práctica · brief con lo que sirve para actuar</td><td>Dos páginas, o una web</td></tr><tr><td><b>El campo</b></td><td>Mapa del área · panel que se actualiza · alerta temática</td><td>Visualización, sitio, boletín</td></tr><tr><td><b>Tu proyecto</b></td><td>La brecha convertida en propuesta o postulación</td><td>Documento de proyecto</td></tr></tbody></table></div>"}, {"k": "campo", "t": "Elige una", "etiqueta": "¿Cuál de estas salidas te sirve a ti, y para quién?", "placeholder": "Salida: ...\nPara quién: ...\nPor qué la necesita: ..."}]}, {"id": "b3", "titulo": "Dónde empieza el código", "desde": 26, "hasta": 38, "tipo": "encuadro", "taller": [{"k": "texto", "t": "Las dos preguntas que deciden", "texto": "<p><b>1 · ¿Es una cosa, o es un proceso?</b><br>Una cosa es un archivo que produces y te llevas. Un proceso es algo que vuelve a ocurrir cuando cambian los datos.</p><p><b>2 · ¿Lo haces una vez, o lo vas a rehacer?</b><br>Si es una vez, el chat te basta y te sobra. Si vas a rehacerlo cada vez que tu tabla crezca, necesitas que esté escrito como instrucción ejecutable.</p><p class=\"mini\">La línea no es de dificultad: es de repetición. Muchas cosas difíciles se hacen conversando una sola vez.</p>"}]}, {"id": "b4", "titulo": "Sin código: de tu tabla a una página", "desde": 38, "hasta": 52, "tipo": "demo", "taller": [{"k": "prompt", "t": "De tu CSV a una página navegable", "app": "Claude · ChatGPT · Gemini", "texto": "Actúa como desarrollador web.\n\nQuiero convertir la tabla de mi revisión de literatura en una página que pueda abrir, buscar y compartir.\n\nTe adjunto mi CSV. Cada fila es un artículo.\n\nConstrúyeme un archivo HTML ÚNICO y autocontenido, sin librerías externas ni CDN, que funcione al abrirlo con doble clic y sin conexión a internet.\n\nDebe tener:\n- un buscador que filtre por texto mientras escribo\n- filtros por año, por diseño y por tema\n- una tarjeta por artículo con autor, año, título, revista y hallazgo principal\n- enlace al DOI cuando exista\n- un contador de cuántos artículos se están mostrando\n- que se vea bien en el celular\n\nEncabezado con el título de mi revisión y mi nombre.\nEstilo sobrio y legible, tipografía grande, sin decoración innecesaria.\n\nNo inventes datos: usa solo lo que está en mi CSV. Si un campo está vacío o dice \"no reportado\", muéstralo así o déjalo en blanco, pero no lo completes.\n\nMI CSV:\n[ADJÚNTALO O PÉGALO AQUÍ]"}, {"k": "prompt", "t": "La segunda vuelta, para afinarla", "app": "Claude · ChatGPT · Gemini", "texto": "Está bien, pero quiero estos cambios:\n\n- [qué agregar o quitar]\n- [qué ordenar distinto]\n- [qué no se entiende]\n\nDevuélveme el archivo completo otra vez, no solo el fragmento que cambió."}]}, {"id": "b5", "titulo": "Ahora la tuya", "desde": 52, "hasta": 74, "tipo": "hacen", "taller": [{"k": "pasos", "t": "En estos minutos", "items": ["Corrí el prompt con mi CSV", "Abrí el archivo y lo probé: busqué, filtré", "Pedí al menos un cambio en la segunda vuelta", "Lo descargué y lo guardé donde lo voy a encontrar", "Se lo mandé a alguien, o me lo mandé a mí"]}, {"k": "campos", "t": "Cómo te fue", "items": [{"etiqueta": "Qué le pedí en la segunda vuelta", "placeholder": "..."}, {"etiqueta": "Qué NO logré que hiciera", "placeholder": "..."}, {"etiqueta": "A quién se lo mandaría", "placeholder": "..."}]}]}, {"id": "b6", "titulo": "Respiro", "desde": 74, "hasta": 77, "tipo": "transicion", "taller": []}, {"id": "b7", "titulo": "Con código: un caso real", "desde": 77, "hasta": 95, "tipo": "demo", "taller": [{"k": "texto", "t": "El caso: la Matriz Documental del Observatorio", "texto": "<p>45 documentos de política educacional brasileña, desde la Constitución de 1988, clasificados por categoría, año, órgano responsable, nivel de enseñanza y dimensión de equidad, cada uno con enlace a su fuente oficial.</p><p>La estructura del proyecto es así:</p><pre>matriz_documentos/\n  index.html                     la página publicada\n  data/matriz_documentos.xlsx    ← la tabla que se edita\n  scripts/02_construir_matriz.R  ← regenera la página desde la tabla</pre><p>Y la cabecera del script dice, literalmente:</p><pre>Lee el Excel (matriz_documentos.xlsx) y regenera el HTML\n(index.html), inyectando el array DADOS en el script.\n\nEjecútalo cada vez que edites el Excel.</pre><p><b>Ahí está la diferencia entera.</b> La página no se edita: se regenera. Se mantiene una tabla, y el sitio sale de ella.</p>"}, {"k": "texto", "t": "Qué necesitarías para hacer algo así", "texto": "<p><b>Una cuenta y una instalación.</b> Claude Code, o alguna herramienta equivalente que pueda leer y escribir archivos en tu computador.</p><p><b>Un poco de tolerancia al error.</b> La primera vez algo va a fallar. La diferencia con el chat es que aquí el error se arregla y queda arreglado para siempre.</p><p><b>Y una razón real.</b> Si tu tabla no va a crecer, no lo necesitas. Si vas a estar agregando artículos durante dos años de tesis, sí.</p><p class=\"mini\">Nadie tiene que salir de aquí instalando nada. Lo que sí conviene salir sabiendo es <b>reconocer cuándo tu problema es de los que necesitan esto</b>, para pedir ayuda con precisión.</p>"}, {"k": "campo", "t": "Tu caso", "etiqueta": "¿Lo tuyo es una cosa o un proceso? ¿Por qué?", "placeholder": "..."}]}, {"id": "b8", "titulo": "Publicarla, si quieres", "desde": 95, "hasta": 106, "tipo": "hacen", "taller": [{"k": "texto", "t": "Si quieres publicarla", "texto": "<p>La ruta más corta: una cuenta gratuita de GitHub, un repositorio nuevo, subir tu archivo con el nombre <code>index.html</code>, y activar Pages en <i>Settings → Pages → Deploy from a branch → main</i>.</p><p>En unos minutos tienes una dirección propia.</p><p class=\"mini\">No es obligatorio. El archivo descargado ya abre, ya se busca y ya se manda. Publicar sirve si prefieres mandar un enlace, o si vas a actualizarlo.</p>"}, {"k": "pasos", "t": "Antes de publicar, revisa", "items": ["No hay notas personales mías en la tabla", "No hay comentarios sobre colegas ni sobre revisores", "No hay datos de personas sin su permiso", "Estoy de acuerdo con que esto sea público y quede indexado"]}]}, {"id": "b9", "titulo": "Lo que se llevan", "desde": 106, "hasta": 120, "tipo": "encuadro", "taller": [{"k": "constructor_declaracion", "t": "Tu declaración de uso, ahora completa"}, {"k": "campo", "t": "Lo que sigue", "etiqueta": "¿Qué otra salida del catálogo vas a construir, y para cuándo?", "placeholder": "Voy a construir: ...\nPara: ...\nAntes de: ..."}, {"k": "pasos", "t": "Antes de cerrar la página", "items": ["Descargué mi trabajo de los cuatro días", "Guardé mi página en un lugar donde la voy a encontrar", "Terminé mi declaración de uso", "Anoté qué voy a construir después"]}, {"k": "nota", "texto": "Todo el material del curso queda publicado en <b>gabrielfortes-xdglab.github.io/ia-revision-literatura</b>. Los cuatro días, con sus prompts y sus plantillas, para volver cuando los necesites."}]}]},SOLO_TALLER=true;
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS='cursoIA-dia'+DATOS.dia;
+
+/* ---------- persistencia ---------- */
+let estado=JSON.parse(localStorage.getItem(LS)||'{}');
+const guardar=()=>localStorage.setItem(LS,JSON.stringify(estado));
+function conectar(el){
+  const k=el.dataset.k; if(!k) return;
+  if(el.type==='checkbox'||el.type==='radio'){ if(estado[k])el.checked=true;
+    el.addEventListener('change',()=>{estado[k]=el.checked;guardar();recalcular();}); }
+  else { if(estado[k]!=null)el.value=estado[k];
+    el.addEventListener('input',()=>{estado[k]=el.value;guardar();recalcular();}); }
+}
+
+/* ---------- modos ---------- */
+function modo(m){
+  if(SOLO_TALLER) m='taller';
+  document.body.dataset.modo=m;
+  $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.modo===m));
+  estado._modo=m; guardar();
+  if(m==='clase') pintar();
+}
+
+/* ---------- modo clase: pantallas ---------- */
+const PANT=[];
+DATOS.bloques.forEach((b,bi)=>(b.pantallas||[]).forEach((p,pi)=>
+  PANT.push({...p,_b:bi,_pi:pi,_n:(b.pantallas||[]).length})));
+let idx=0;
+function pintar(){
+  const p=PANT[idx], b=DATOS.bloques[p._b];
+  /* el titulo del bloque, sin minutos: el horario es del docente, no de la sala */
+  $('#kicker').innerHTML = p.k==='cubierta' ? ''
+    : '<span class="dot" style="color:var(--'+b.tipo+')"></span>'+b.titulo;
+  $('#escena').innerHTML=render(p);
+  $('#puntos').innerHTML=Array.from({length:p._n},(_,i)=>
+    '<i class="'+(i===p._pi?'on':'')+'"></i>').join('');
+  $('#pos').textContent=(idx+1)+' / '+PANT.length;
+  $('#ant').disabled=idx===0; $('#sig').disabled=idx===PANT.length-1;
+  $('#notasLista').innerHTML=(b.guion||[]).map(g=>'<li>'+g+'</li>').join('')||
+    '<li class="mini">Sin notas para este bloque.</li>';
+  bloqueActual=p._b;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function render(p){
+  const li=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(p.k==='cubierta') return '<div class="cubierta"><div class="rotulo">Curso</div>'+
+    '<h1>'+DATOS.curso+'</h1>'+
+    (DATOS.lema?'<div class="lema">'+DATOS.lema+'</div>':'')+
+    '<div class="regla"></div>'+
+    '<div class="dia">Día '+DATOS.dia+'<small>'+DATOS.titulo+'</small></div>'+
+    '<div class="firma">'+DATOS.docente+'</div></div>';
+  if(p.k==='portada') return '<h2>'+p.t+'</h2>'+(p.s?'<p class="sub">'+p.s+'</p>':'');
+  if(p.k==='frase')   return '<p class="frase">'+p.t+'</p>';
+  if(p.k==='lista')   return '<h2>'+p.t+'</h2>'+li(p.items);
+  if(p.k==='dos')     return '<h2>'+p.t+'</h2><div class="dos"><div><h3>'+p.a.t+'</h3>'+
+    li(p.a.items)+'</div><div><h3>'+p.b.t+'</h3>'+li(p.b.items)+'</div></div>';
+  if(p.k==='tabla')   return '<h2>'+p.t+'</h2><table><thead><tr>'+
+    p.head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    p.rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>';
+  if(p.k==='demo')    return '<span class="vivo">En vivo</span><h2>'+p.t+'</h2>'+
+    (p.s?'<p class="sub">'+p.s+'</p>':'')+
+    (p.mirar?'<div class="mirar"><p>Qué mirar</p><ol>'+
+      p.mirar.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>':'');
+  if(p.k==='flujo'){
+    const malla=p.pasos.length>3;
+    return '<h2>'+p.t+'</h2><div class="flujo'+(malla?' malla':'')+'">'+
+      p.pasos.map((x,i)=>((i&&!malla)?'<span class="fl" aria-hidden="true">→</span>':'')+
+        '<div class="paso'+(x.cede?' cede':'')+'"><b>'+x.t+'</b>'+
+        (x.s?'<span>'+x.s+'</span>':'')+'</div>').join('')+'</div>';
+  }
+  if(p.k==='cuadr')   return '<h2>'+p.t+'</h2><div class="cuadr">'+
+    p.items.map(x=>'<div class="c"><b>'+x.t+'</b><span>'+x.s+'</span></div>').join('')+
+    '</div>';
+  if(p.k==='capas')   return '<h2>'+p.t+'</h2><div class="capas">'+
+    p.capas.map(c=>'<div class="cap"><span class="op">'+c.op+'</span>'+c.t+'</div>').join('')+
+    (p.nota?'<p class="nota">'+p.nota+'</p>':'')+'</div>';
+  return '<h2>'+(p.t||'')+'</h2>';
+}
+const ir=d=>{idx=Math.min(PANT.length-1,Math.max(0,idx+d));pintar()};
+
+/* ---------- cronometro ---------- */
+let t0=null,pausa=0,bloqueActual=0;
+function reloj(){
+  const el=$('#reloj');
+  if(!el) return;
+  if(!t0){el.innerHTML='';return}
+  const s=Math.floor((Date.now()-t0)/1000), m=Math.floor(s/60);
+  el.innerHTML='<b>'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'</b>';
+}
+setInterval(reloj,1000);
+
+/* ---------- constructores ---------- */
+function recalcular(){
+  const cp=$('#salidaPrompt');
+  if(cp){
+    const rol=($('[data-k=cp_rol]')||{}).value||'[rol]';
+    const ins=($('[data-k=cp_insumo]')||{}).value||'[tu artefacto]';
+    const cr=($('[data-k=cp_criterios]')||{}).value||'[criterios]';
+    let t='Actúa como '+rol+'.\n\nEsto es lo que quiero que revises:\n'+ins+
+      '\n\nAnalízalo según estos criterios:\n'+cr.split('\n').filter(Boolean)
+      .map(x=>'- '+x).join('\n');
+    $$('[data-mov]:checked').forEach(c=>{t+='\n\n'+c.dataset.texto});
+    cp.textContent=t;
+  }
+  const cs=$('#salidaString');
+  if(cs){
+    const g=[1,2,3].map(i=>(($('[data-k=cs_c'+i+']')||{}).value||'').trim())
+      .filter(Boolean)
+      .map(v=>{const s=v.split(',').map(x=>x.trim()).filter(Boolean)
+        .map(x=>x.includes(' ')?'"'+x+'"':x);
+        return s.length>1?'('+s.join(' OR ')+')':s[0]});
+    const ex=(($('[data-k=cs_not]')||{}).value||'').trim();
+    let out=g.join(' AND ');
+    if(ex){const t=ex.split(',').map(x=>x.trim()).filter(Boolean)
+      .map(x=>x.includes(' ')?'"'+x+'"':x);
+      out+=(out?' ':'')+'NOT '+(t.length>1?'('+t.join(' OR ')+')':t[0]);}
+    cs.textContent=out||'Escribe al menos un concepto arriba.';
+    const n=$('#nParen'); if(n) n.textContent=g.length;
+  }
+  const NL=String.fromCharCode(10);
+  const cr=$('#salidaCriterios');
+  if(cr){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    const marc=n=>$$('[data-crit='+n+']:checked').map(e=>e.dataset.val);
+    const tipos=marc('tipo'), idiomas=marc('idioma'), acceso=marc('acceso');
+    const lista=a=>a.length>1?a.slice(0,-1).join(', ')+' y '+a[a.length-1]:(a[0]||'');
+    cr.textContent=[
+      'CRITERIOS DE INCLUSIÓN','',
+      'Entra un trabajo si cumple todo esto:',
+      '1. Publicado desde '+(v('cr_ano')||'[año]')+' en adelante.',
+      '2. Es de alguno de estos tipos: '+(tipos.length?lista(tipos):'[marca los tipos arriba]')+'.',
+      '3. Está en alguno de estos idiomas: '+(idiomas.length?lista(idiomas):'[marca los idiomas arriba]')+'.',
+      '4. Trata sobre: '+(v('cr_pob')||'[tu población o contexto]')+'.','',
+      'Regla de acceso: '+(acceso[0]||'[elige una opción arriba]')+'.','',
+      'Todo lo que no cumpla los cuatro puntos queda fuera, y se anota por cuál falló.'
+    ].join(NL);
+  }
+  const dc=$('#salidaDecl');
+  if(dc){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    const us=$$('[data-dec]:checked').map(e=>e.dataset.val);
+    const uso=($$('[data-dec2]:checked')[0]||{dataset:{}}).dataset.val;
+    const lista=a=>a.length>1?a.slice(0,-1).join(', ')+' y '+a[a.length-1]:(a[0]||'');
+    dc.textContent=[
+      'DECLARACIÓN DE USO DE INTELIGENCIA ARTIFICIAL','',
+      'Herramientas utilizadas: '+(v('dc_herr')||'[cuáles]')+'.',
+      'Propósito: '+(us.length?lista(us):'[para qué las usaste]')+'.',
+      'Prompts: las instrucciones utilizadas están registradas en la bitácora del proyecto.',
+      'Uso del contenido generado: '+(uso||'[qué hiciste con lo que devolvió]')+'.',
+      'Revisión: '+(v('dc_rev')||'[cómo lo verificaste]'),
+      'Límites reconocidos: '+(v('dc_lim')||'[qué queda fuera y por qué]'),'',
+      'La autoría, las decisiones metodológicas y la responsabilidad por el contenido son mías.'
+    ].join(NL);
+  }
+  const ck=$('#salidaCodebook');
+  if(ck){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    ck.textContent=[
+      'Actúa como metodólogo con experiencia en revisiones de literatura en ciencias sociales.','',
+      'Mi pregunta de investigación es: '+(v('ck_preg')||'[tu pregunta]'),
+      'Cada fila de mi tabla será: '+(v('ck_unidad')||'[un artículo]'),
+      'Con la tabla terminada quiero poder responder: '+(v('ck_uso')||'[qué quieres poder decir del campo]'),'',
+      'Propón entre 8 y 12 campos para mi tabla de extracción. Para cada campo indica:',
+      '- nombre corto del campo, en minúsculas y sin espacios',
+      '- qué pregunta responde',
+      '- tipo: cerrado, numérico, texto o verbatim',
+      '- si es cerrado, la lista completa de valores permitidos',
+      '- la regla de decisión para los casos dudosos',
+      '- qué poner cuando el dato no aparece en el artículo','',
+      'Incluye siempre un campo de evidencia que registre dónde lo dice: sección o página.',
+      'No propongas campos que yo no pueda llenar leyendo el artículo.',
+      'Si algún campo que sugieres va a ser difícil de llenar de forma consistente, dilo.',
+      'Devuélvelo como tabla.'
+    ].join(NL);
+  }
+  const cx=$('#salidaExtraccion');
+  if(cx){
+    const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+      .map(x=>x.trim()).filter(Boolean));
+    const cols=dados.length?dados:['autor_ano','diseno','n','hallazgo_principal'];
+    cx.textContent=[
+      'Actúa como asistente de extracción de datos para una revisión de literatura.','',
+      'Te voy a dar un artículo. Llena UNA fila de mi tabla con estos campos:'
+    ].concat(cols.map(c=>'- '+c)).concat([
+      '','Este es exactamente el formato que espero:','',
+      '| '+cols.join(' | ')+' | evidencia_donde |',
+      '| '+cols.map(()=>'...').join(' | ')+' | sección o página |','',
+      'Reglas:',
+      '- Para cada campo indica en la columna de evidencia dónde lo dice.',
+      '- Si el dato no aparece, escribe "no reportado". No lo infieras.',
+      '- No resumas el artículo: solo llena los campos.',
+      '- Si dudas entre dos valores, escribe los dos y marca la duda.'
+    ]).join(NL);
+  }
+  const cb=$('#salidaBrecha');
+  if(cb){
+    const v=k=>(($('[data-k='+k+']')||{}).value||'').trim();
+    cb.textContent=v('br_x')||v('br_a')||v('br_c')
+      ? (v('br_x')||'[fenómeno]')+' se ha estudiado en '+(v('br_a')||'[contexto A]')+
+        ' y en '+(v('br_b')||'[contexto B]')+', pero no en '+(v('br_c')||'[contexto C]')+'.'
+      : 'Completa los campos para armar la frase.';
+  }
+}
+
+/* ---------- descargar el esqueleto del codebook ---------- */
+function bajarCSV(){
+  const NL=String.fromCharCode(10);
+  const dados=((($('[data-k=cx_campos]')||{}).value||'').split(',')
+    .map(x=>x.trim()).filter(Boolean));
+  const cols=dados.length?dados:['autor_ano','diseno','pais','n','hallazgo_principal'];
+  const def=['campo,que pregunta responde,tipo,valores permitidos,regla de decision,si no aparece']
+    .concat(cols.map(c=>c+',,,,,'))
+    .concat(['evidencia_donde,¿Dónde lo dice?,texto,sección o página,siempre obligatorio,nunca vacío'])
+    .join(NL);
+  const datos=[cols.join(',')+',evidencia_donde']
+    .concat(Array.from({length:10},()=>cols.map(()=>'').join(',')+',')).join(NL);
+  [['codebook-1-definicion.csv',def],['codebook-2-datos.csv',datos]].forEach(function(par){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([String.fromCharCode(65279)+par[1]],
+      {type:'text/csv;charset=utf-8'}));
+    a.download=par[0]; a.click();
+  });
+}
+
+/* ---------- exportar ---------- */
+function exportar(){
+  let md='# Mi trabajo · Día '+DATOS.dia+' · '+DATOS.titulo+'\n\n';
+  $$('#taller .bloque').forEach(b=>{
+    const campos=$$('textarea[data-k],input[type=text][data-k]',b).filter(e=>e.value.trim());
+    const marc=$$('input[type=checkbox][data-k]:checked',b);
+    const sal=$$('.salida',b).filter(e=>e.textContent.trim().length>25);
+    if(!campos.length&&!marc.length&&!sal.length) return;
+    md+='## '+$('h2',b).textContent.trim()+'\n\n';
+    marc.forEach(c=>md+='- [x] '+c.nextElementSibling.textContent.trim()+'\n');
+    if(marc.length) md+='\n';
+    campos.forEach(c=>{
+      const l=c.closest('td')?($$('th',c.closest('table'))[c.closest('td').cellIndex]||{}).textContent
+        :(c.previousElementSibling||{}).textContent;
+      md+='**'+((l||c.dataset.k)+'').trim()+':** '+c.value.trim()+'\n\n';
+    });
+    sal.forEach(s=>md+='```\n'+s.textContent.trim()+'\n```\n\n');
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download='curso-ia-dia'+DATOS.dia+'.md'; a.click();
+}
+
+/* ---------- arranque ---------- */
+addEventListener('DOMContentLoaded',()=>{
+  $$('[data-k]').forEach(conectar);
+  $$('.copiar').forEach(b=>b.addEventListener('click',async()=>{
+    const src=$(b.dataset.dest);
+    await navigator.clipboard.writeText(src.textContent);
+    const o=b.textContent; b.textContent='Copiado'; b.classList.add('ok');
+    setTimeout(()=>{b.textContent=o;b.classList.remove('ok')},1600);
+  }));
+  $('#bExportar').addEventListener('click',exportar);
+  $$('.bajarcsv').forEach(b=>b.addEventListener('click',bajarCSV));
+  if(!SOLO_TALLER){
+    $$('.seg button').forEach(b=>b.addEventListener('click',()=>modo(b.dataset.modo)));
+    $('#ant').addEventListener('click',()=>ir(-1));
+    $('#sig').addEventListener('click',()=>ir(1));
+    $('#bNotas').addEventListener('click',e=>{
+      const n=$('#notas'), o=n.dataset.open!=='true';
+      n.dataset.open=o; e.currentTarget.classList.toggle('on',o);
+    });
+    $('#bReloj').addEventListener('click',e=>{
+      if(t0){t0=null;e.currentTarget.textContent='Cronómetro';e.currentTarget.classList.remove('on')}
+      else{t0=Date.now();e.currentTarget.textContent='Detener';e.currentTarget.classList.add('on')}
+      reloj();
+    });
+    addEventListener('keydown',e=>{
+      if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if(document.body.dataset.modo!=='clase') return;
+      if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();ir(1)}
+      if(e.key==='ArrowLeft'){e.preventDefault();ir(-1)}
+      if(e.key==='n'||e.key==='N'){$('#bNotas').click()}
+    });
+  }
+  const io=new IntersectionObserver(es=>es.forEach(x=>{
+    if(x.isIntersecting)$$('#indice a').forEach(a=>
+      a.classList.toggle('act',a.getAttribute('href')==='#'+x.target.id));
+  }),{rootMargin:'-72px 0px -70% 0px'});
+  $$('#taller .bloque').forEach(b=>io.observe(b));
+  modo(SOLO_TALLER?'taller':(estado._modo||'clase')); recalcular(); reloj();
+});
+</script></body></html>
