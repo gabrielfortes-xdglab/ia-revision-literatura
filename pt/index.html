@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ferramentas de IA para revisão de Literatura</title>
+<meta name="description" content="Curso prático de uso crítico de IA para revisão de literatura. Dr. Gabriel Fortes.">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfaf7;--fg:#16130f;--muted:#6b625a;--line:#e2ddd4;--card:#fff;--accent:#8a3d1f;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14120f;--fg:#f2eee7;--muted:#a89e94;--line:#332e28;--card:#1c1915;--accent:#e08c62}
+}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;min-height:100vh}
+.wrap{max-width:620px;width:100%;padding:clamp(2.5rem,7vw,4rem) clamp(1.2rem,5vw,2rem)}
+.rotulo{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 1.1rem}
+h1{font-family:var(--serif);font-weight:600;line-height:1.08;
+  font-size:clamp(1.9rem,5.6vw,3rem);margin:0;max-width:16ch}
+.lema{font-family:var(--serif);font-style:italic;color:var(--muted);
+  font-size:clamp(1rem,2.4vw,1.35rem);margin:.45rem 0 0}
+.regla{width:80px;height:4px;background:var(--accent);margin:1.8rem 0}
+.firma{color:var(--muted);font-size:.95rem;margin:0 0 2.6rem;line-height:1.45}
+.firma b{color:var(--fg);font-weight:600;display:block}
+
+.dias{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.dias a,.dias span.off{display:flex;align-items:center;gap:1rem;
+  padding:1.05rem 1.25rem;border:1px solid var(--line);border-radius:10px;
+  background:var(--card);text-decoration:none;color:inherit;transition:border-color .12s}
+.dias a:hover{border-color:var(--accent)}
+.dias a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.dias span.off{opacity:.45}
+.n{font-family:var(--serif);font-size:1.35rem;color:var(--accent);flex:none;width:1.9rem}
+.dias span.off .n{color:var(--muted)}
+.t{flex:1;font-weight:500}
+.flecha{color:var(--accent);flex:none}
+@media (prefers-reduced-motion:reduce){.dias a{transition:none}}
+
+footer{margin-top:2.6rem;color:var(--muted);font-size:.82rem}
+footer a{color:var(--accent)}
+.idioma{margin-top:1.6rem;font-size:.85rem;color:var(--muted)}
+.idioma a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="rotulo">Curso</p>
+  <h1>Ferramentas de IA para revisão de Literatura</h1>
+  <p class="lema">uma introdução prática</p>
+  <div class="regla"></div>
+  <p class="firma"><b>Dr. Gabriel Fortes</b></p>
+
+  <ul class="dias">
+    <li><a href="dia1/">
+      <span class="n">1</span><span class="t">Dia 1</span>
+      <span class="flecha" aria-hidden="true">→</span></a></li>
+    <li><a href="dia2/">
+      <span class="n">2</span><span class="t">Dia 2</span>
+      <span class="flecha" aria-hidden="true">→</span></a></li>
+    <li><a href="dia3/">
+      <span class="n">3</span><span class="t">Dia 3</span>
+      <span class="flecha" aria-hidden="true">→</span></a></li>
+    <li><a href="dia4/">
+      <span class="n">4</span><span class="t">Dia 4</span>
+      <span class="flecha" aria-hidden="true">→</span></a></li>
+  </ul>
+
+  <p class="idioma"><a href="../">Versión en español →</a></p>
+
+  <footer>Publicado no <a href="https://gabrielfortes-xdglab.github.io/">xdG:Lab</a>.</footer>
+</main>
+</body>
+</html>
