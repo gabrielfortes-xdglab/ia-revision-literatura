@@ -326,7 +326,7 @@ function render(p){
     '<h1>'+DATOS.curso+'</h1>'+
     (DATOS.lema?'<div class="lema">'+DATOS.lema+'</div>':'')+
     '<div class="regla"></div>'+
-    '<div class="dia">'+T.dia+' '+DATOS.dia+'<small>'+DATOS.titulo+'</small></div>'+
+    '<div class="dia">'+(DATOS.rotulo||T.dia+' '+DATOS.dia)+'<small>'+DATOS.titulo+'</small></div>'+
     '<div class="firma">'+DATOS.docente+'</div></div>';
   if(p.k==='portada') return '<h2>'+p.t+'</h2>'+(p.s?'<p class="sub">'+p.s+'</p>':'');
   if(p.k==='frase')   return '<p class="frase">'+p.t+'</p>';
@@ -467,7 +467,7 @@ function bajarCSV(){
 
 /* ---------- exportar ---------- */
 function exportar(){
-  let md='# '+T.miTrabajo+' · '+T.dia+' '+DATOS.dia+' · '+DATOS.titulo+'\n\n';
+  let md='# '+T.miTrabajo+' · '+(DATOS.rotulo||T.dia+' '+DATOS.dia)+' · '+DATOS.titulo+'\n\n';
   $$('#taller .bloque').forEach(b=>{
     const campos=$$('textarea[data-k],input[type=text][data-k]',b).filter(e=>e.value.trim());
     const marc=$$('input[type=checkbox][data-k]:checked',b);
