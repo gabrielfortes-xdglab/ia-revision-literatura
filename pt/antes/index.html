@@ -216,6 +216,28 @@ body[data-modo=clase] .exportar{display:none}
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const LS='cursoIA-dia'+DATOS.dia;
 
+/* ---------- diário reunido (dia 4): lê o que foi salvo nos dias 1 a 3 ---------- */
+function diarioReunido(){
+  const tb=document.getElementById('diarioReunido'); if(!tb) return;
+  let fontes=[]; try{fontes=JSON.parse(tb.dataset.fontes);}catch(e){}
+  const linhas=[];
+  fontes.forEach(f=>{
+    let st={}; try{st=JSON.parse(localStorage.getItem('cursoIA-dia'+f.dia)||'{}');}catch(e){}
+    for(let r=0;r<f.filas;r++){
+      const v=[0,1,2,3].map(c=>String(st[f.pref+r+'-'+c]||'').trim());
+      if(v.some(Boolean)) linhas.push([T.dia+' '+f.dia].concat(v));
+    }
+  });
+  tb.textContent='';
+  if(!linhas.length){
+    const tr=document.createElement('tr'),td=document.createElement('td');
+    td.colSpan=5; td.textContent=tb.dataset.vazio; tr.appendChild(td); tb.appendChild(tr); return;
+  }
+  linhas.forEach(l=>{const tr=document.createElement('tr');
+    l.forEach(x=>{const td=document.createElement('td');td.textContent=x;tr.appendChild(td);});
+    tb.appendChild(tr);});
+}
+
 /* ---------- persistencia ---------- */
 let estado=JSON.parse(localStorage.getItem(LS)||'{}');
 const guardar=()=>localStorage.setItem(LS,JSON.stringify(estado));
@@ -461,6 +483,6 @@ addEventListener('DOMContentLoaded',()=>{
       a.classList.toggle('act',a.getAttribute('href')==='#'+x.target.id));
   }),{rootMargin:'-72px 0px -70% 0px'});
   $$('#taller .bloque').forEach(b=>io.observe(b));
-  modo(SOLO_TALLER?'taller':(estado._modo||'clase')); recalcular(); reloj();
+  modo(SOLO_TALLER?'taller':(estado._modo||'clase')); recalcular(); reloj(); diarioReunido();
 });
 </script></body></html>
